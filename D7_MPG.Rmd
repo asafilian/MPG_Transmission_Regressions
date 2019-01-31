@@ -458,23 +458,6 @@ In other words:
 
 The diagnosis plot of this models can be found in Fig. \ref{fig:diag-2-qsec}. 
 
-<!--
-# Conclusion {#sec-con}
-
-In summary, We predict that
-- Manual transmission works much better (w.r.t fuel consumption) than automatic transmission for small cars, i.e., cars not heavier than 1.27 tonne. 
-- Manual transmission works a little better (w.r.t fuel consumption) than automatic transmission for vehicles with given displacement less than 257. 
-- Manual transmission is always better (w.r.t fuel consumption) than automatic transmission for a given horsepower.
-
-
-- mpg $\sim$ wt + hp (considering the interaction with am: mpg $\sim$ wt * am + hp) 
-- mpg $\sim$ wt + qsec (considering the interaction with am: mpg $\sim$ wt * am + qsec)
-
-Then, we address our questions via these linear models. Our results are as follow:
-
-- The estimated MPG is 30.95 (42.5, respectively) for an automatic (manual, respectively) transmission vehicle
-with weight 0 and horsepower 0.
--->
 
 # Appendix A: R Scripts of [Sect. 2](#sec-prelim) {-#app-code-2}
 Loading and transforming the data:
