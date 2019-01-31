@@ -1,0 +1,592 @@
+---
+title: "Analysis of Mile per Gallon vs. Tranmission via Regression Models"
+author: "Aliakbar Safilian^[Email: a.a.safilian@gmail.com]"
+date: "January 21, 2019"
+output: 
+        bookdown::pdf_document2:
+          number_sections: yes
+urlcolor: blue
+header-includes:
+  - \usepackage{color}
+  - \usepackage{float}
+---
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos="H", echo = TRUE, comment="", warning = FALSE, message = FALSE, fig.align="center")
+```
+
+# Overview
+In this report, we explore the relationship between a set of variables and *miles per gallon* (MPG). The dataset of interest in this report is **mtcars** from the dataset package. 
+
+The data includes the following variables:
+
+- **cyl**: Number of cylinders 
+- **disp**: Displacement 
+- **hp**: Gross horsepower 
+- **drat**: Rear axle ratio 
+- **wt**: Weight 
+- **qsec**: 1/4 mile time 
+- **vs**: Engine shape, i.e., V-shaped or straight 
+- **am**: Automatic (0) or manual (1) transimission 
+- **gear**: Number of forward gears 
+- **carb**: Number of carburetors 
+
+We are particularly interested in the following two questions:
+
+- ``Is an automatic or manual transmission better for MPG'' 
+- ``Quantify the MPG difference between automatic and manual transmissions''
+
+In [Sect.2](#sec-prelim), we do some prelimanry analysis, including loading, transformation, and some summary and exploratory analysis. We show that, in general, we expect that manual transmission works better than automatic transmission with respect to fuel economy. We deeply investigate this in the subsequent sections, considering many other factors.  
+
+In [Sect.3](#sec-single), for each numeric variable $var$, we build a linear model with **mpg** as the output and $var$ as
+the regressor considering its interaction with the transmission type. We first select linear models which are worth considering. Then, we address our main questions using by these linear models.  
+
+In [Sect.4](#sec-mult), we consider multivariate regression models. Again, we select the best fitting models, and then study them to address our analysis questions.   
+
+The R scripts of [Sect.2](#sec-prelim), [Sect.3](#sec-single), and [Sect.4](#sec-mult) can be found in [Appendix.A](#app-code-2), [Appendix.B](#app-code-3), and [Appendix.C](#app-code-4). [Appendix.D](#app-diag) include the diagnosis plots for the fitting models. 
+
+We consider 0.05 as the significance rate in all statistical analyses in this report. 
+
+# Preliminary Analysis {#sec-prelim}
+Let us first take a look at the structure of the data (we have transformed the variable **am** into its equaivalent factor variable and rename its levels): 
+
+```{r loading, echo=FALSE}
+library(datasets)
+data("mtcars")
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars$am) <- c("automatic", "manual")
+str(mtcars)
+```
+
+```{r mean, echo=FALSE}
+library(dplyr)
+d <- mtcars %>% group_by(am) %>% summarize(mean_mpg = round(mean(mpg), 2))
+```
+
+As we see in the boxplot in Fig. \ref{fig:boxplot}, in general, the manual transformation is better than the automatic transmission in the sense of fuel economy. The mean of MPG for automatic transmission and manual transmission are `r d[1,2]` and `r d[2,2]`, respectively.  
+```{r boxplot, echo=FALSE, out.width = '70%', fig.cap="\\label{fig:boxplot}The Box Plot for MPG per Transmission Type"}
+library(ggplot2)
+qplot(am, mpg, data = mtcars, colour = am) + geom_boxplot() +
+        xlab("Transmission") + ylab("MPG")
+```
+
+# Single Variate Regression Models {#sec-single}
+In this section, for each numeric variable *var*, we build a linear model with MPG as the output and *var* as the regressor considering its interaction with the transmission type, i.e., the model $mpg$ ~ $var * factor(am)$.
+
+
+In [Sect.3.1](#sec-sing-select), we select the linear models which are worth considering. In [Sect.3.2](#sec-fit-wt), [Sect.3.3](#sec-fit-disp), and [Sect.3.4](#sec-fit-hp), we address our main analysis question on the selected models.  
+
+
+## Model Selection {#sec-sing-select}
+We show that
+\begin{theorem}
+The best three single variate models with mpg as the output are mpg $\sim$ wt*am, mpg $\sim$ disp*am, and mpg $\sim$ hp*am. $\square$
+\end{theorem}
+The rest of this section is devoted to the proof of the theorem. 
+
+The correlation between the numeric variables in the dataset is shown in the chart in Fig. \ref{fig:cor-chart}.  As we see in the chart, the correlation between **mpg** and **qsec**, i.e., `r round(cor(mtcars$mpg, mtcars$qsec), 2)`, is not that high. Therefore, we ignore the model fitting of **mpg** vs. **qsec**.    
+```{r corchart, echo=FALSE, out.width = '70%', fig.cap="\\label{fig:cor-chart}The Correlation Chart"}
+library(corrplot)
+library(PerformanceAnalytics)
+chart.Correlation(mtcars[, c(1, 3:7)], histogram=TRUE, pch=19)
+```
+
+Our models are as follow. Note that the weigth unit in the dataset is 1000lb; however, we change it to tonne.    
+```{r}
+fit_wt <- lm(mpg ~ I(wt /2.20462) * factor(am), data = mtcars)
+fit_disp <- lm(mpg ~ disp  * factor(am), data = mtcars)
+fit_hp <- lm(mpg ~ hp * factor(am), data = mtcars)
+fit_drat <- lm(mpg ~ drat * factor(am), data = mtcars)
+```
+
+Since the above models are non-nested models, we take advantage of the *coxtest* function from the *lmtest* package to test them. In Table. \ref{tab:tab-pvalue}, each row and column belongs to a fitting model. For any $1 \leq i, j \leq 4$, the cell in the position $[i,j]$ represents the P-value of comparing $m_i$ against $n_j$, where ($\forall t$) $m_t$ denotes the fitted model in row $t$, and $n_t$ denotes the model represented in column $j$.
+
+```{r tab-pvalue, echo=FALSE}
+library(lmtest)
+wt_disp <- round(coxtest(fit_wt, fit_disp)$`Pr(>|z|)`, 2)
+wt_hp <- round(coxtest(fit_wt, fit_hp)$`Pr(>|z|)`, 2)
+wt_drat <- round(coxtest(fit_wt, fit_drat)$`Pr(>|z|)`, 2)
+disp_hp <- round(coxtest(fit_disp, fit_hp)$`Pr(>|z|)`, 2)
+disp_drat <- round(coxtest(fit_disp, fit_drat)$`Pr(>|z|)`, 2)
+hp_drat <- round(coxtest(fit_hp, fit_drat)$`Pr(>|z|)`, 2)
+wt_c <- c(0, wt_disp[2], wt_hp[2], wt_drat[2])
+disp_c <- c(wt_disp[1], 0, disp_hp[2], disp_drat[2])
+hp_c <- c(wt_hp[1], disp_hp[1], 0, hp_drat[2])
+drat_c <- c(wt_drat[1], disp_drat[1], hp_drat[1], 0)
+tests_pval <- as.data.frame(cbind(wt_c, disp_c, hp_c, drat_c))
+row.names(tests_pval) <- c("fit_wt", "fit_disp", "fit_hp", "fit_drat")
+colnames(tests_pval) <- paste("   ", row.names(tests_pval), sep = "")
+
+library(knitr)
+library(kableExtra)
+kable(tests_pval, caption = "P-values of Comparing Single Variate Models by coxtest") %>%
+        kable_styling(latex_options = "hold_position")
+```
+
+Considering $0.05$ as our significance rate, the results are as follow:
+
+- All other fitting models are preferred over the model  fit_drat. 
+
+- The models other than fit_drat have no preference over each other, though the best among all the models is fit_wt. 
+
+Therefore, we discard the model fit_drat. 
+
+One could find the corresponding diagnosis plots in [Appendix. 1](#app-diag-1). As we see in the diagnostic plots, everything (including normality of errors and residuals) looks more less ok for the fitting models.  
+ 
+In the rest of this section, we investigate the fitting models excluding **fit_drat**.  
+
+## MPG vs. Weight {#sec-fit-wt}
+The first model that we study is fit_wt, i.e., mpg $\sim$ wt*am. Let us take a look at its coefficients: 
+```{r fitwt-coef, echo=FALSE}
+cff_wt <- round(summary(fit_wt)$coefficient, 2)
+cff_wt
+```
+
+
+The estimated intercept in automatic transmission is about `r round(cff_wt[1,1], 2)`, and  `r round(cff_wt[3,1], 2)` is the estimated change in the intercept of the linear relationship between weigth and MPG going from automatic transmission to manual transmission.   The estimated slope in automatic transmission is `r round(cff_wt[2,1], 2)` while the estimated change in the slope switching from automatic to manual is `r round(cff_wt[4,1], 2)`.   In other words:
+
+- The estimated MPG for automatic and manual vehicles with 0 weight are `r round(cff_wt[1,1], 2)` and `r round(cff_wt[1,1] + cff_wt[3,1], 2)`, respectively. 
+
+- The expected change in MPG per 1 tonne change in weight for automatic and manual vehicles are `r round(cff_wt[2,1], 2)` and `r round(cff_wt[2,1] + cff_wt[4,1], 2)`, respectively.
+
+Fig. \ref{fig:fit_wt} represents the corresponding plot, where the regression lines for automatic transmission and manaual transmission are shown in red and blue, respectively.
+
+```{r plot-fitwt, out.width = '70%', echo=FALSE, fig.cap="\\label{fig:fit_wt}MPG vs. Weight"}
+line <- data.frame(intercept = c( cff_wt[1, 1], cff_wt[1, 1] + cff_wt[3, 1]),
+                   slope = c( cff_wt[2, 1], cff_wt[2, 1] + cff_wt[4, 1]), 
+                   row.names = c("automatic", "manual") )
+x_com_wt <- (line[1,1] - line[2,1]) / (line[2,2] - line[1, 2]) 
+qplot(wt/2.20462, mpg, data = mtcars) + 
+        xlab("Weigth (Tonne)") + ylab("Mile per Gallon") +
+        geom_abline(aes(intercept=intercept, slope=slope, 
+                        colour=c("red", "blue")), data=line) + 
+        theme(legend.title=element_blank()) +
+        scale_color_manual(labels = c("manual", "automatic"), values = c("blue", "red")) + 
+        geom_vline(xintercept = x_com_wt, linetype = "dashed") + 
+        geom_text(aes(x_com_wt+0.12,0,label = round(x_com_wt, 2)), size = 3, 
+                  color = "purple")
+```
+ 
+
+As it is clear heavier vehicle results in more fuel consumption. 
+The regression lines meets at point **`r round(x_com_wt, 2)`** tonne. As seen, we predict that for vehicles with weight less (more, respectively) than `r round(x_com_wt, 2)` tonne, the manual (automatic, respectively) transmission is a better for fuel economy.
+
+## MPG vs. Displacement {#sec-fit-disp}
+The next model is fit_disp, i.e., mpg $\sim$ wt*am whose coefficients are as follow:
+```{r fitdisp-coef, echo=FALSE}
+cff_disp <- round(summary(fit_disp)$coefficient, 2)
+cff_disp
+```
+
+The estimated intercept in automatic transmission is about `r round(cff_disp[1,1], 2)`, while  `r round(cff_disp[3,1], 2)` is the estimated change in the intercept of the linear relationship between displacement and MPG going from automatic transmission to manual transmission.  The estimated slope in automatic transmission is `r round(cff_disp[2,1], 2)` while the estimated change in the slope switching from automatic to manual is `r round(cff_disp[4,1], 2)`.  In other words:
+
+- The estimated MPG for automatic transmission and manual transmission vehicles with 0 cu.in. displacement are `r round(cff_disp[1,1], 2)`  and `r round(cff_disp[1,1] + cff_disp[3,1], 2)`, respectively. 
+
+- The expected change in MPG per 1 cu.in. change in displacement for automatic and manual vehicles are `r round(cff_disp[2,1], 2)` and `r round(cff_disp[2,1] + cff_disp[4,1], 2)`, respectively.
+
+Fig. \ref{fig:fit_disp} the corresponding plot, where the regression lines for automatic transmission and manaual transmission are shown in blue and red, respectively.
+
+```{r plot-fitdisp, echo=FALSE, out.width = '70%', fig.cap="\\label{fig:fit_disp}MPG vs. Displacement"}
+line <- data.frame(intercept = c( cff_disp[1, 1], cff_disp[1, 1] + cff_disp[3, 1]),
+                   slope = c( cff_disp[2, 1], cff_disp[2, 1] + cff_disp[4, 1]), 
+                   row.names = c("automatic", "manual") )
+x_com_disp <- (line[1,1] - line[2,1]) / (line[2,2] - line[1, 2]) 
+qplot(disp, mpg, data = mtcars) +
+        geom_abline(aes(intercept=intercept, slope=slope,
+                        colour=c("blue", "red")), data=line) + 
+        theme(legend.title=element_blank()) +
+        scale_color_manual(labels = c("automatic", "manual"), values = c("red", "blue")) + 
+        geom_vline(xintercept = x_com_disp, linetype = "dashed") + 
+        geom_text(aes(x_com_disp+10,0,label = round(x_com_disp, 2)), size = 3,
+                  color = "purple")
+```
+
+
+As it is clear, higher displacement results in more fuel consumption. The regression lines meets at point **`r round(x_com_disp, 2)`** cu.in. As seen in the plot, we predict that for vehicles with displacement less (more, respectively) than `r round(x_com_disp, 2)` (cu.in.), the manual (automatic, respectively) transmission workes better w.r.t fuel economy. 
+
+## MPG vs. Horsepower {#sec-fit-hp}
+The last model to study is fit_hp, i.e., mpg $\sim$ hp*am with the following coefficients: 
+```{r fithp-coef, echo=FALSE}
+cff_hp <- round(summary(fit_hp)$coefficient, 2)
+cff_hp
+```
+
+The estimated intercept in automatic transmission is about `r round(cff_hp[1,1], 2)`.  `r round(cff_hp[3,1], 2)` is the estimated change in the intercept of the linear relationship between horsepower and MPG going from automatic transmission to manual transmission.  The estimated slope in automatic transmission is `r round(cff_hp[2,1], 2)` while the estimated change in the slope switching from automatic to manual is about `r round(cff_hp[4,1], 2)`. This shows that there is no signigicant interaction between **am** and **hp**.  In other words:
+
+- The expected MPG for automatic transmission and manual transmission vehicles with horsepower 0 are `r round(cff_hp[1,1], 2)` and `r round(cff_hp[1,1] + cff_hp[3,1], 2)`, respectively.  
+- The expected change in MPG per unit change in horsepower for both automatic and manual vehicles is about `r round(cff_hp[2,1], 2)`.
+
+Note that the second bullet implies that the corresponding regression lines for automatic and manual would be parallel. Fig. \ref{fig:fit_hp} represents the corresponding plot, where the regression lines for automatic transmission and manaual transmission are shown in red and blue, respectively. 
+
+```{r plot-fithp, echo=FALSE, out.width = '70%', fig.cap="\\label{fig:fit_hp}MPG vs. Horsepower"}
+line <- data.frame(intercept = c( cff_hp[1, 1], cff_hp[1, 1] + cff_hp[3, 1]),
+                   slope = c( cff_hp[2, 1], cff_hp[2, 1] + cff_hp[4, 1]), 
+                   row.names = c("automatic", "manual") )
+
+qplot(hp, mpg, data = mtcars) +
+        geom_abline(aes(intercept=intercept, slope=slope,
+                        colour=c("blue", "red")), data=line) + 
+        theme(legend.title=element_blank()) +
+        scale_color_manual(labels = c("automatic", "manual"), values = c("red", "blue"))
+```
+
+
+Clearly, higher horsepower results in worse fuel economy. As seen in the above plot, we predict that manual transmission is always better than automatic transmission with respect to fuel economy for a given horsepower. 
+ 
+
+# Multivariate Regression Models {#sec-mult}
+In this section, we consider more complicated models, i.e., multivariate regression models. 
+
+The structure of this section is as follows: In [Sect.4.1](#sec-mult-select), we select the multivariate linear regression models which are worth considering. In [Sect.4.2](#sec-fit-wthp) and [Sect.4.3](#sec-fit-wtqsec), we address our main analysis question on the selected models.  
+
+## Model Selection {#sec-mult-select} 
+We show that:
+
+\begin{theorem}
+The best two fitting linear models with mpg as the output are mpg $\sim$ wt+hp and mpg $\sim$ wt+qsec. $\square$
+\end{theorem}
+
+As we already saw, among the single variate models, the models worth to consider are **Model1**: mpg~wt, **Model2**: mpg~hp, and **Model3**: mpg~disp. Now, we want to see if adding some new regressors to these models make sense. We show that 
+
+
+\begin{lemma}\label{lem:lem1}
+The best models including wt as a regressor are mpg $\sim$ wt+hp and mpg $\sim$ wt+qsec. $\square$ 
+\end{lemma}
+
+\begin{lemma}\label{lem:lem2}
+The best model including hp as a must regressor is mpg $\sim$ hp+wt.  $\square$
+\end{lemma}
+
+\begin{lemma}\label{lem:lem3}
+Considering disp as a must regressor in our models, the best linear model is mpg $\sim$ disp+wt. $\square$ 
+\end{lemma}
+
+Note that these three lemmas together prove our main theorem. 
+
+### Proof of Lemma. \ref{lem:lem1}
+Let us first see if adding some regressors to mpg~wt makes senses. We take advantage of the *anova* function to address this question. The P-values for comparing the model $mpg$ ~ $wt$ vs. $mpg$ ~ $wt + var$, where $var \in \{disp, hp, drat, qsec\}$ are represented in Table. \ref{tab:test-mult-wt}. 
+```{r test-mult-wt, echo=FALSE}
+fit11 <- lm(mpg ~ wt, data = mtcars)
+fit12 <- lm(mpg ~ wt + disp, data = mtcars)
+fit13 <- lm(mpg ~ wt + hp, data = mtcars)
+fit14 <- lm(mpg ~ wt + drat, data = mtcars)
+fit15 <- lm(mpg ~ wt + qsec, data = mtcars)
+
+disp_val <- round(anova(fit11, fit12)$`Pr(>F)`[2], 2)
+hp_val <- round(anova(fit11, fit13)$`Pr(>F)`[2], 2)
+drat_val <- round(anova(fit11, fit14)$`Pr(>F)`[2], 2)
+qsec_val <- round(anova(fit11, fit15)$`Pr(>F)`[2], 2)
+
+
+tests_pval <- as.data.frame(cbind(disp_val, hp_val, drat_val, qsec_val))
+row.names(tests_pval) <- c("mpg~wt")
+colnames(tests_pval) <- c("mpg~wt+disp", "  mpg~wt+hp", "  mpg~wt+drat", "  mpg~wt+qsec")
+
+kable(tests_pval, 
+      caption = "P-values of Comparing 2-variate Models with wt as the Regressor") %>%
+        kable_styling(latex_options = "hold_position")
+```
+
+Considering the significance rate 0.05, we see that only the two models "mpg ~ wt + hp" and "mpg ~ wt + qsec" are preferred over mpg ~ wt. Now, let us see which of these two models works better:  
+
+```{r fit1315test, echo=FALSE}
+round(coxtest(fit13, fit15), 2)
+```
+
+Therefore, considering 0.05 as the significance rate, none of them are preferred over the other. 
+
+Now, let us see if their combination, i.e., mpg ~ wt + hp + qsec, works better. In the following, we show that mpg ~ wt + hp + qsec is NOT preferred over mpg ~ wt + hp. 
+
+```{r comb1315test, echo=FALSE}
+fit <- lm(mpg ~ wt + hp + qsec, data = mtcars)
+anova(fit13, fit)
+```
+
+Now, we show that mpg ~ wt + hp + qsec is NOT preferred over mpg ~ wt + qsec: 
+
+```{r comb1315test2, echo=FALSE}
+anova(fit15, fit)
+```
+
+Therefore, we showed that the best models including **wt** as a must regressor is *mpg ~ wt + hp* or *mpg ~ wt + qsec*. Lemma. \ref{lem:lem1} was proven. 
+
+### Proof of Lemma. \ref{lem:lem2} 
+Let us now see if adding some regressors to mpg ~ hp makes our fitting model any better. Again, we apply the *anova* function
+to address this question. The P-value for comparing the model mpg~hp vs. mpg~hp+$var$, where $var \in \{disp, wt, drat, qsec\}$ are represented in Table. \ref{tab:test-mult-hp}. 
+```{r test-mult-hp, echo=FALSE}
+fit21 <- lm(mpg ~ hp, data = mtcars)
+fit22 <- lm(mpg ~ hp + disp, data = mtcars)
+fit23 <- lm(mpg ~ hp + wt, data = mtcars)
+fit24 <- lm(mpg ~ hp + drat, data = mtcars)
+fit25 <- lm(mpg ~ hp + qsec, data = mtcars)
+
+disp_val <- round(anova(fit21, fit22)$`Pr(>F)`[2], 2)
+wt_val <- round(anova(fit21, fit23)$`Pr(>F)`[2], 2)
+drat_val <- round(anova(fit21, fit24)$`Pr(>F)`[2], 2)
+qsec_val <- round(anova(fit21, fit25)$`Pr(>F)`[2], 2)
+
+
+tests_pval <- as.data.frame(cbind(disp_val, wt_val, drat_val, qsec_val))
+row.names(tests_pval) <- c("mpg~hp")
+colnames(tests_pval) <- c("mpg~hp+disp", "  mpg~hp+wt", "  mpg~hp+drat", "  mpg~hp+qsec")
+
+kable(tests_pval, 
+      caption = "P-values of Comparing 2-variate Models with hp as the Regressor") %>%
+        kable_styling(latex_options = "hold_position")
+```
+
+Considering the significance rate 0.05, all the models excluding mpg~hp+qsec are preferred over mpg~hp. Now, using the *coxtest* command, we want to see which of them works the best:
+
+The following tables show that *mpg~hp+wt* has preference over mpg~hp+disp and mpg~hp+drat:
+
+```{r fit22-24test, echo=FALSE}
+coxtest(fit22, fit23)
+coxtest(fit23, fit24)
+```
+
+Therefore, we showed that the best model including **hp** as a must regressor is *mpg~hp+wt*. Lemma. \ref{lem:lem2} is proven.    
+
+### Proof of Lemma. \ref{lem:lem3}
+The last model to be considered is mpg~disp. Applying the *anova* function, the P-values for comparing the model mpg~disp vs. mpg~disp+$var$, where $var \in \{hp, wt, drat, qsec\}$ are represented in Table. \ref{tab:test-mult-disp}. 
+
+As we see in the table, *mpg~disp+wt* is the only model which is preferred over mpg~disp. In other words, considering disp as a must regressor in our models, the best linear model is *mpg~disp+wt*. Lemma. \ref{lem:lem3} is proven.  
+
+```{r test-mult-disp, echo=FALSE}
+fit31 <- lm(mpg ~ disp, data = mtcars)
+fit32 <- lm(mpg ~ disp + hp, data = mtcars)
+fit33 <- lm(mpg ~ disp + wt, data = mtcars)
+fit34 <- lm(mpg ~ disp + drat, data = mtcars)
+fit35 <- lm(mpg ~ disp + qsec, data = mtcars)
+
+hp_val <- round(anova(fit31, fit32)$`Pr(>F)`[2], 2)
+wt_val <- round(anova(fit31, fit33)$`Pr(>F)`[2], 2)
+drat_val <- round(anova(fit31, fit34)$`Pr(>F)`[2], 2)
+qsec_val <- round(anova(fit31, fit35)$`Pr(>F)`[2], 2)
+
+
+tests_pval <- as.data.frame(cbind(hp_val, wt_val, drat_val, qsec_val))
+row.names(tests_pval) <- c("mpg~disp")
+colnames(tests_pval) <- 
+        c("mpg~disp+hp", "  mpg~disp+wt", "  mpg~disp+drat", "  mpg~dispp+qsec")
+
+kable(tests_pval, 
+      caption = "P-values of Comparing 2-variate Models with disp as the Regressor") %>%
+        kable_styling(latex_options = "hold_position")
+```
+
+
+## MPG vs. Weight plus Horsepower {#sec-fit-wthp}
+In this section, we study the model with **wt** and **hp** as regressors. Let's first consider the full interaction between transmission type and the regressors, i.e., the following model:
+```{r}
+fit_wt_hp <- lm(mpg ~ (I(wt/2.20462) + hp) * factor(am), data = mtcars)
+```
+
+The coefficients of the model are as follow:
+```{r fitwthp, echo=FALSE}
+cff_wt_hp <- round(summary(fit_wt_hp)$coefficient, 2)
+cff_wt_hp
+```
+
+As we see, the P-value for the interaction of **hp** and **am** is not significant. Moreover, the P-value for the coefficient **wt** is a little higher than the sigficance rate (0.05). Therefore, we modify the model as follows: 
+
+```{r}
+fit_wt_hp <- lm(mpg ~ (I(wt/2.20462) * factor(am)) + hp, data = mtcars)
+```
+
+The coefficients of the model are as follow:
+```{r fitwthp2, echo=FALSE}
+cff_wt_hp <- round(summary(fit_wt_hp)$coefficient, 2)
+cff_wt_hp
+```
+
+The estimated intercept in automatic transmission is about `r round(cff_wt_hp[1,1], 2)`, and  `r round(cff_wt_hp[3,1], 2)` is the estimated change in the intercept of the linear relationship going from automatic transmission to manual transmission. The estimated coefficient of weigth in automatic transmission is `r round(cff_wt_hp[2,1], 2)` while the estimated change in the weigth coefficient switching from automatic to manual is `r round(cff_wt_hp[5,1], 2)`.   The estimated coefficient of horsepower is `r round(cff_wt_hp[4,1], 2)`. 
+
+In other words:
+
+- The estimated MPG is `r round(cff_wt_hp[1,1], 2)`  and `r round(cff_wt_hp[1,1] + cff_wt_hp[3,1], 2)` for the automatic transmission and the manual transmission vehicle with weight 0 and horsepower 0, respectively. 
+
+- The expected change in MPG for an automatic transmission and manual transmission per tonne change in weight are `r round(cff_wt_hp[2,1], 2)` and `r round(cff_wt_hp[2,1] + cff_wt_hp[5,1], 2)`, respectively, by holding the horsepwer constant.
+
+- The expected change in MPG for both automatic and manual vehicle per unit change in horsepower is `r round(cff_wt_hp[4,1], 2)`, by holding weight constant. 
+
+We have represented the diagnosis plots of this model in Fig. \ref{fig:diag-2-hp}. 
+
+## MPG vs. Weight plus 1/4-Mile-Time {#sec-fit-wtqsec}
+In this section, we study the model with **wt** and **qsec** as regressors. We first consider the full interaction between transmission type and the regressors, i.e., the following model:
+
+```{r}
+fit_wt_qsec <- lm(mpg ~ (I(wt/2.20462) + qsec) * factor(am), data = mtcars)
+```
+
+The coefficients of the model are as follow:
+```{r fitwtqsec, echo=FALSE}
+cff_wt_qsec <- round(summary(fit_wt_qsec)$coefficient, 2)
+cff_wt_qsec
+```
+
+As we see, the P-value for the interaction of **qsec** and **am** is not significant. Therefore, we modify the model as follows:
+
+```{r}
+fit_wt_qsec <- lm(mpg ~ (I(wt/2.20462) * factor(am)) + qsec, data = mtcars)
+```
+
+The coefficients of the new model are as follow:
+```{r fitwtqsec2, echo=FALSE}
+cff_wt_qsec <- round(summary(fit_wt_qsec)$coefficient, 2)
+cff_wt_qsec
+```
+
+Since the P-value associated with intercept is high, our estimated intercept in automatic transmission is 0.  `r round(cff_wt_qsec[3,1], 2)` is the estimated change in the intercept of the linear relationship going from automatic transmission to manual transmission.  The estimated coefficient of weigth in automatic transmission is `r round(cff_wt_qsec[2,1], 2)` while the estimated change in the weigth coefficient switching from automatic to manual is `r round(cff_wt_qsec[5,1], 2)`.  The estimated coefficient of qsec is `r round(cff_wt_qsec[4,1], 2)`.
+
+In other words:
+
+- The estimated MPG is 0 for an automatic transmission vehicle with weight 0 and qsect 0. 
+
+- The estimated MPG is `r round(cff_wt_qsec[3,1], 2)` for a manual transmission vehicle with weight 0 and qsect 0. 
+
+- The expected change in MPG for an automatic transmission vehicle per tonne change in weight is `r round(cff_wt_qsec[2,1], 2)`, by holding the qsec constant. 
+
+- The expected change in MPG for an automatic manual vehicle per tonne change in weight is `r round(cff_wt_qsec[2,1] + cff_wt_qsec[5,1], 2)`, by holding the qsec constant. 
+
+- The expected change in MPG for both automatic and manual vehicle per unit change in qsec is `r round(cff_wt_qsec[4,1], 2)`, by holding weight constant
+
+
+
+
+The diagnosis plot of this models can be found in Fig. \ref{fig:diag-2-qsec}. 
+
+<!--
+# Conclusion {#sec-con}
+
+In summary, We predict that
+- Manual transmission works much better (w.r.t fuel consumption) than automatic transmission for small cars, i.e., cars not heavier than 1.27 tonne. 
+- Manual transmission works a little better (w.r.t fuel consumption) than automatic transmission for vehicles with given displacement less than 257. 
+- Manual transmission is always better (w.r.t fuel consumption) than automatic transmission for a given horsepower.
+
+
+- mpg $\sim$ wt + hp (considering the interaction with am: mpg $\sim$ wt * am + hp) 
+- mpg $\sim$ wt + qsec (considering the interaction with am: mpg $\sim$ wt * am + qsec)
+
+Then, we address our questions via these linear models. Our results are as follow:
+
+- The estimated MPG is 30.95 (42.5, respectively) for an automatic (manual, respectively) transmission vehicle
+with weight 0 and horsepower 0.
+-->
+
+# Appendix A: R Scripts of [Sect. 2](#sec-prelim) {-#app-code-2}
+Loading and transforming the data:
+
+```{r, ref.label='loading', eval = FALSE}
+```
+
+The boxplot for MPG per each transmission type:
+```{r, ref.label='boxplot', eval=FALSE}
+```
+
+# Appendix B: R Scripts of [Sect. 3](#sec-single) {-#app-code-3}
+The correlation chart:
+```{r, ref.label='corchart', eval=FALSE}
+```
+
+Code of Table. \ref{tab:tab-pvalue} (P-values of Comparing Single Variate Models)
+```{r, ref.label='tab-pvalue', eval=FALSE}
+```
+
+The coefficients of fit_wt:
+```{r, ref.label='fitwt-coef', eval=FALSE}
+```
+
+The corresponding plot for fit_wt
+```{r, ref.label= 'plot-fitwt', eval=FALSE}
+```
+
+The coefficients of fit_disp:
+```{r, ref.label='fitdisp-coef', eval=FALSE}
+```
+
+The corresponding plot for fit_disp:
+```{r, ref.label='plot-fitdisp', eval=FALSE}
+```
+
+The coefficients of fit_hp:
+```{r, ref.label='fithp-coef', eval=FALSE}
+```
+
+The corresponding plot for fit_hp:
+```{r, ref.label='plot-fithp', eval=FALSE}
+```
+
+# Appendix C: R Scripts of [Sect. 4](#sec-mult) {-#app-code-4}
+The script for Table. \ref{tab:test-mult-wt}
+```{r, ref.label='test-mult-wt', eval=FALSE}
+```
+
+Comparing two models mpg~wt+hp and mpg~wt+qsec:
+```{r, ref.label='fit1315test', eval=FALSE}
+```
+
+Comparing two models mpg~wt+hp+qsec and mpg~wt+hp:
+```{r comb1315test, eval=FALSE}
+```
+
+Comparing two models mpg~wt+hp+qsec and mpg~wt+qsec:
+```{r comb1315test2, eval=FALSE}
+```
+
+The script fot Table. \ref{tab:test-mult-hp}:
+```{r, ref.label='test-mult-hp', eval=FALSE}
+```
+
+Comparing mpg~hp+wt vs. mpg~hp+disp and mpg~hp+drat:
+```{r, ref.label='fit22-24test', eval=FALSE}
+```
+
+The script for Table. \ref{tab:test-mult-disp}. 
+```{r, ref.label='test-mult-disp', eval=FALSE}
+```
+
+The coefficients of the fit_wt_hp:
+```{r, ref.label='fitwthp', eval=FALSE}
+```
+
+The coefficients of the new fit_wt_hp:
+```{r, ref.label='fitwthp2', eval=FALSE}
+```
+
+The coefficients of the model fit_qsec:
+```{r, ref.label='fitwtqsec', eval=FALSE}
+```
+
+The coefficients of the new model fit_qsec:
+```{r, ref.label='fitwtqsec2', eval=FALSE}
+```
+
+# Appendix D: The Diagnosis Plots {-#app-diag}
+
+```{r,  fig.cap="\\label{fig:diag-1-wt}Diagnosis Plots for mpg vs. wt*factor(am)", echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(fit_wt)
+```
+
+```{r,  fig.cap="\\label{fig:diag-1-disp}Diagnosis Plots for mpg vs. disp*factor(am)", echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(fit_disp)
+```
+
+```{r,  fig.cap="\\label{fig:diag-1-hp}Diagnosis Plots for mpg vs. hp*factor(am)", echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(fit_hp)
+```
+
+```{r,  fig.cap="\\label{fig:diag-2-hp}Diagnosis Plots for mpg vs. (wt + hp) * factor(am)", echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(fit_wt_hp)
+```
+
+```{r,  fig.cap="\\label{fig:diag-2-qsec}Diagnosis Plots for mpg vs. (wt + qsec) * factor(am)", echo=FALSE}
+layout(matrix(c(1,2,3,4),2,2))
+plot(fit_wt_qsec)
+```
