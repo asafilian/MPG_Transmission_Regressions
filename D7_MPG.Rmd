@@ -24,10 +24,10 @@ In this report, we explore the relationship between a set of variables and *mile
 The data includes the following variables:
 
 - **cyl**: Number of cylinders 
-- **disp**: Displacement 
+- **disp**: Displacement (cu.in.) 
 - **hp**: Gross horsepower 
 - **drat**: Rear axle ratio 
-- **wt**: Weight 
+- **wt**: Weight (1000 lbs) 
 - **qsec**: 1/4 mile time 
 - **vs**: Engine shape, i.e., V-shaped or straight 
 - **am**: Automatic (0) or manual (1) transimission 
@@ -51,13 +51,19 @@ The R scripts of [Sect.2](#sec-prelim), [Sect.3](#sec-single), and [Sect.4](#sec
 We consider 0.05 as the significance rate in all statistical analyses in this report. 
 
 # Preliminary Analysis {#sec-prelim}
-Let us first take a look at the structure of the data (we have transformed the variable **am** into its equaivalent factor variable and rename its levels): 
+Let us first take a look at the structure of the data: (We transform **cyl** (number of cylinders), **vs** (engine shape), **am** (transmission), **gear**, and **carb** (number of carburetors) to their equivalent factor variables. Also, we have renamed the levels of the **am** and **vs** variables. Moreover, we have changed the unit of **wt** from 1000lb to tonne.)
 
 ```{r loading, echo=FALSE}
 library(datasets)
 data("mtcars")
 mtcars$am <- as.factor(mtcars$am)
 levels(mtcars$am) <- c("automatic", "manual")
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
+levels(mtcars$vs) <- c("v", "s")
+mtcars$gear <- as.factor(mtcars$gear)
+mtcars$carb <- as.factor(mtcars$carb)
+mtcars$wt <- mtcars$wt/2.20462
 str(mtcars)
 ```
 
@@ -96,7 +102,7 @@ chart.Correlation(mtcars[, c(1, 3:7)], histogram=TRUE, pch=19)
 
 Our models are as follow. Note that the weigth unit in the dataset is 1000lb; however, we change it to tonne.    
 ```{r}
-fit_wt <- lm(mpg ~ I(wt /2.20462) * factor(am), data = mtcars)
+fit_wt <- lm(mpg ~ wt * factor(am), data = mtcars)
 fit_disp <- lm(mpg ~ disp  * factor(am), data = mtcars)
 fit_hp <- lm(mpg ~ hp * factor(am), data = mtcars)
 fit_drat <- lm(mpg ~ drat * factor(am), data = mtcars)
@@ -122,7 +128,8 @@ colnames(tests_pval) <- paste("   ", row.names(tests_pval), sep = "")
 
 library(knitr)
 library(kableExtra)
-kable(tests_pval, caption = "P-values of Comparing Single Variate Models by coxtest") %>%
+kable(tests_pval, "latex", booktabs = T,  
+      caption = "P-values of Comparing Single Variate Models by coxtest") %>%
         kable_styling(latex_options = "hold_position")
 ```
 
@@ -145,6 +152,27 @@ cff_wt <- round(summary(fit_wt)$coefficient, 2)
 cff_wt
 ```
 
+The 95% confidence intervals of the coefficients are represented in the following table. 
+
+```{r conf-wt, echo=FALSE}
+q <- c(-1,1) * qt(.975, df = fit_wt$df)
+int_aut <- cff_wt[1,1] + q * cff_wt[1,2] 
+int_aut2man <- cff_wt[3,1] + q * cff_wt[3,2] 
+wt_aut <- cff_wt[2,1] + q * cff_wt[2,2] 
+wt_aut2man <- cff_wt[4,1] + q * cff_wt[4,2] 
+ 
+
+conf_wt <- data.frame(Intercept = int_aut, 
+                          wt = wt_aut,  
+                          `factor(am)manual` = int_aut2man, 
+                          `wt:factor(am)manual` = wt_aut2man)
+
+row.names(conf_wt) <- c("Lower", "Upper")
+
+kable(round(conf_wt, 2), "latex", booktabs = T) %>%
+  kable_styling(position = "center")
+```
+
 
 The estimated intercept in automatic transmission is about `r round(cff_wt[1,1], 2)`, and  `r round(cff_wt[3,1], 2)` is the estimated change in the intercept of the linear relationship between weigth and MPG going from automatic transmission to manual transmission.   The estimated slope in automatic transmission is `r round(cff_wt[2,1], 2)` while the estimated change in the slope switching from automatic to manual is `r round(cff_wt[4,1], 2)`.   In other words:
 
@@ -159,7 +187,7 @@ line <- data.frame(intercept = c( cff_wt[1, 1], cff_wt[1, 1] + cff_wt[3, 1]),
                    slope = c( cff_wt[2, 1], cff_wt[2, 1] + cff_wt[4, 1]), 
                    row.names = c("automatic", "manual") )
 x_com_wt <- (line[1,1] - line[2,1]) / (line[2,2] - line[1, 2]) 
-qplot(wt/2.20462, mpg, data = mtcars) + 
+qplot(wt, mpg, data = mtcars) + 
         xlab("Weigth (Tonne)") + ylab("Mile per Gallon") +
         geom_abline(aes(intercept=intercept, slope=slope, 
                         colour=c("red", "blue")), data=line) + 
@@ -175,10 +203,31 @@ As it is clear heavier vehicle results in more fuel consumption.
 The regression lines meets at point **`r round(x_com_wt, 2)`** tonne. As seen, we predict that for vehicles with weight less (more, respectively) than `r round(x_com_wt, 2)` tonne, the manual (automatic, respectively) transmission is a better for fuel economy.
 
 ## MPG vs. Displacement {#sec-fit-disp}
-The next model is fit_disp, i.e., mpg $\sim$ wt*am whose coefficients are as follow:
+The next model is fit_disp, i.e., mpg $\sim$ disp*am whose coefficients are as follow:
 ```{r fitdisp-coef, echo=FALSE}
 cff_disp <- round(summary(fit_disp)$coefficient, 2)
 cff_disp
+```
+
+The 95% confidence intervals of the coefficients are represented in the following table. 
+
+```{r conf-disp, echo=FALSE}
+q <- c(-1,1) * qt(.975, df = fit_disp$df)
+int_aut <- cff_disp[1,1] + q * cff_disp[1,2] 
+int_aut2man <- cff_disp[3,1] + q * cff_disp[3,2] 
+disp_aut <- cff_disp[2,1] + q * cff_disp[2,2] 
+disp_aut2man <- cff_disp[4,1] + q * cff_disp[4,2] 
+ 
+
+conf_disp <- data.frame(Intercept = int_aut, 
+                          disp = disp_aut,  
+                          `factor(am)manual` = int_aut2man, 
+                          `disp:factor(am)manual` = disp_aut2man)
+
+row.names(conf_disp) <- c("Lower", "Upper")
+
+kable(round(conf_disp, 2), "latex", booktabs = T) %>%
+  kable_styling(position = "center")
 ```
 
 The estimated intercept in automatic transmission is about `r round(cff_disp[1,1], 2)`, while  `r round(cff_disp[3,1], 2)` is the estimated change in the intercept of the linear relationship between displacement and MPG going from automatic transmission to manual transmission.  The estimated slope in automatic transmission is `r round(cff_disp[2,1], 2)` while the estimated change in the slope switching from automatic to manual is `r round(cff_disp[4,1], 2)`.  In other words:
@@ -212,6 +261,27 @@ The last model to study is fit_hp, i.e., mpg $\sim$ hp*am with the following coe
 ```{r fithp-coef, echo=FALSE}
 cff_hp <- round(summary(fit_hp)$coefficient, 2)
 cff_hp
+```
+
+The 95% confidence intervals of the coefficients are represented in the following table. 
+
+```{r conf-hp, echo=FALSE}
+q <- c(-1,1) * qt(.975, df = fit_hp$df)
+int_aut <- cff_hp[1,1] + q * cff_hp[1,2] 
+int_aut2man <- cff_hp[3,1] + q * cff_hp[3,2] 
+hp_aut <- cff_hp[2,1] + q * cff_hp[2,2] 
+hp_aut2man <- cff_hp[4,1] + q * cff_hp[4,2] 
+ 
+
+conf_hp <- data.frame(Intercept = int_aut, 
+                          hp = hp_aut,  
+                          `factor(am)manual` = int_aut2man, 
+                          `hp:factor(am)manual` = hp_aut2man)
+
+row.names(conf_hp) <- c("Lower", "Upper")
+
+kable(round(conf_hp, 2), "latex", booktabs = T) %>%
+  kable_styling(position = "center")
 ```
 
 The estimated intercept in automatic transmission is about `r round(cff_hp[1,1], 2)`.  `r round(cff_hp[3,1], 2)` is the estimated change in the intercept of the linear relationship between horsepower and MPG going from automatic transmission to manual transmission.  The estimated slope in automatic transmission is `r round(cff_hp[2,1], 2)` while the estimated change in the slope switching from automatic to manual is about `r round(cff_hp[4,1], 2)`. This shows that there is no signigicant interaction between **am** and **hp**.  In other words:
@@ -285,7 +355,7 @@ tests_pval <- as.data.frame(cbind(disp_val, hp_val, drat_val, qsec_val))
 row.names(tests_pval) <- c("mpg~wt")
 colnames(tests_pval) <- c("mpg~wt+disp", "  mpg~wt+hp", "  mpg~wt+drat", "  mpg~wt+qsec")
 
-kable(tests_pval, 
+kable(tests_pval, "latex", booktabs = T, 
       caption = "P-values of Comparing 2-variate Models with wt as the Regressor") %>%
         kable_styling(latex_options = "hold_position")
 ```
@@ -333,7 +403,7 @@ tests_pval <- as.data.frame(cbind(disp_val, wt_val, drat_val, qsec_val))
 row.names(tests_pval) <- c("mpg~hp")
 colnames(tests_pval) <- c("mpg~hp+disp", "  mpg~hp+wt", "  mpg~hp+drat", "  mpg~hp+qsec")
 
-kable(tests_pval, 
+kable(tests_pval, "latex", booktabs = T, 
       caption = "P-values of Comparing 2-variate Models with hp as the Regressor") %>%
         kable_styling(latex_options = "hold_position")
 ```
@@ -372,7 +442,7 @@ row.names(tests_pval) <- c("mpg~disp")
 colnames(tests_pval) <- 
         c("mpg~disp+hp", "  mpg~disp+wt", "  mpg~disp+drat", "  mpg~dispp+qsec")
 
-kable(tests_pval, 
+kable(tests_pval, "latex", booktabs = T,
       caption = "P-values of Comparing 2-variate Models with disp as the Regressor") %>%
         kable_styling(latex_options = "hold_position")
 ```
@@ -381,7 +451,7 @@ kable(tests_pval,
 ## MPG vs. Weight plus Horsepower {#sec-fit-wthp}
 In this section, we study the model with **wt** and **hp** as regressors. Let's first consider the full interaction between transmission type and the regressors, i.e., the following model:
 ```{r}
-fit_wt_hp <- lm(mpg ~ (I(wt/2.20462) + hp) * factor(am), data = mtcars)
+fit_wt_hp <- lm(mpg ~ (wt + hp) * factor(am), data = mtcars)
 ```
 
 The coefficients of the model are as follow:
@@ -393,7 +463,7 @@ cff_wt_hp
 As we see, the P-value for the interaction of **hp** and **am** is not significant. Moreover, the P-value for the coefficient **wt** is a little higher than the sigficance rate (0.05). Therefore, we modify the model as follows: 
 
 ```{r}
-fit_wt_hp <- lm(mpg ~ (I(wt/2.20462) * factor(am)) + hp, data = mtcars)
+fit_wt_hp <- lm(mpg ~ (wt * factor(am)) + hp, data = mtcars)
 ```
 
 The coefficients of the model are as follow:
@@ -401,6 +471,29 @@ The coefficients of the model are as follow:
 cff_wt_hp <- round(summary(fit_wt_hp)$coefficient, 2)
 cff_wt_hp
 ```
+
+The 95% confidence intervals of the coefficients are represented in the following table. 
+
+```{r conf-wthp, echo=FALSE}
+q <- c(-1,1) * qt(.975, df = fit_wt_hp$df)
+int_aut <- cff_wt_hp[1,1] + q * cff_wt_hp[1,2] 
+int_aut2man <- cff_wt_hp[3,1] + q * cff_wt_hp[3,2] 
+wt_aut <- cff_wt_hp[2,1] + q * cff_wt_hp[2,2] 
+wt_aut2man <- cff_wt_hp[5,1] + q * cff_wt_hp[5,2] 
+hpc <- cff_wt_hp[4,1] + q * cff_wt_hp[4,2] 
+
+conf_wthp <- data.frame(Intercept = int_aut, 
+                        wt = wt_aut,  
+                        `factor(am)manual` = int_aut2man, 
+                        hp = hpc, 
+                        `wt:factor(am)manual` = wt_aut2man)
+
+row.names(conf_wthp) <- c("Lower", "Upper")
+
+kable(round(conf_wthp, 2), "latex", booktabs = T) %>%
+  kable_styling(position = "center")
+```
+
 
 The estimated intercept in automatic transmission is about `r round(cff_wt_hp[1,1], 2)`, and  `r round(cff_wt_hp[3,1], 2)` is the estimated change in the intercept of the linear relationship going from automatic transmission to manual transmission. The estimated coefficient of weigth in automatic transmission is `r round(cff_wt_hp[2,1], 2)` while the estimated change in the weigth coefficient switching from automatic to manual is `r round(cff_wt_hp[5,1], 2)`.   The estimated coefficient of horsepower is `r round(cff_wt_hp[4,1], 2)`. 
 
@@ -418,7 +511,7 @@ We have represented the diagnosis plots of this model in Fig. \ref{fig:diag-2-hp
 In this section, we study the model with **wt** and **qsec** as regressors. We first consider the full interaction between transmission type and the regressors, i.e., the following model:
 
 ```{r}
-fit_wt_qsec <- lm(mpg ~ (I(wt/2.20462) + qsec) * factor(am), data = mtcars)
+fit_wt_qsec <- lm(mpg ~ (wt + qsec) * factor(am), data = mtcars)
 ```
 
 The coefficients of the model are as follow:
@@ -430,7 +523,7 @@ cff_wt_qsec
 As we see, the P-value for the interaction of **qsec** and **am** is not significant. Therefore, we modify the model as follows:
 
 ```{r}
-fit_wt_qsec <- lm(mpg ~ (I(wt/2.20462) * factor(am)) + qsec, data = mtcars)
+fit_wt_qsec <- lm(mpg ~ (wt * factor(am)) + qsec, data = mtcars)
 ```
 
 The coefficients of the new model are as follow:
@@ -438,6 +531,29 @@ The coefficients of the new model are as follow:
 cff_wt_qsec <- round(summary(fit_wt_qsec)$coefficient, 2)
 cff_wt_qsec
 ```
+
+The 95% confidence intervals of the coefficients are represented in the following table. 
+
+```{r conf-wtqsec, echo=FALSE}
+q <- c(-1,1) * qt(.975, df = fit_wt_qsec$df)
+int_aut <- cff_wt_qsec[1,1] + q * cff_wt_qsec[1,2] 
+int_aut2man <- cff_wt_qsec[3,1] + q * cff_wt_qsec[3,2] 
+wt_aut <- cff_wt_qsec[2,1] + q * cff_wt_qsec[2,2] 
+wt_aut2man <- cff_wt_qsec[5,1] + q * cff_wt_qsec[5,2] 
+qsecc <- cff_wt_qsec[4,1] + q * cff_wt_qsec[4,2] 
+
+conf_wtqsec <- data.frame(Intercept = int_aut, 
+                          wt = wt_aut,  
+                          `factor(am)manual` = int_aut2man, 
+                          qsec = qsecc, 
+                          `wt:factor(am)manual` = wt_aut2man)
+
+row.names(conf_wtqsec) <- c("Lower", "Upper")
+
+kable(round(conf_wtqsec, 2), "latex", booktabs = T) %>%
+  kable_styling(position = "center")
+```
+
 
 Since the P-value associated with intercept is high, our estimated intercept in automatic transmission is 0.  `r round(cff_wt_qsec[3,1], 2)` is the estimated change in the intercept of the linear relationship going from automatic transmission to manual transmission.  The estimated coefficient of weigth in automatic transmission is `r round(cff_wt_qsec[2,1], 2)` while the estimated change in the weigth coefficient switching from automatic to manual is `r round(cff_wt_qsec[5,1], 2)`.  The estimated coefficient of qsec is `r round(cff_wt_qsec[4,1], 2)`.
 
@@ -482,6 +598,10 @@ The coefficients of fit_wt:
 ```{r, ref.label='fitwt-coef', eval=FALSE}
 ```
 
+The 95% confidence interval for the fit_wt coefficients:
+```{r, ref.label='conf-wt', eval=FALSE}
+```
+
 The corresponding plot for fit_wt
 ```{r, ref.label= 'plot-fitwt', eval=FALSE}
 ```
@@ -490,12 +610,20 @@ The coefficients of fit_disp:
 ```{r, ref.label='fitdisp-coef', eval=FALSE}
 ```
 
+The 95% confidence interval for coefficients of fit_disp:
+```{r, ref.label='conf-disp', eval=FALSE}
+```
+
 The corresponding plot for fit_disp:
 ```{r, ref.label='plot-fitdisp', eval=FALSE}
 ```
 
 The coefficients of fit_hp:
 ```{r, ref.label='fithp-coef', eval=FALSE}
+```
+
+The 95% confidence interval for the coefficients of fit_hp:
+```{r, ref.label='conf-hp', eval=FALSE}
 ```
 
 The corresponding plot for fit_hp:
@@ -539,12 +667,20 @@ The coefficients of the new fit_wt_hp:
 ```{r, ref.label='fitwthp2', eval=FALSE}
 ```
 
-The coefficients of the model fit_qsec:
+The confidence intervals for coefficients for fit_wt_hp:
+```{r, ref.label='conf-wthp', eval=FALSE}
+```
+
+The coefficients of the model fit_wt_qsec:
 ```{r, ref.label='fitwtqsec', eval=FALSE}
 ```
 
-The coefficients of the new model fit_qsec:
+The coefficients of the new model fit_wt_qsec:
 ```{r, ref.label='fitwtqsec2', eval=FALSE}
+```
+
+The confidence intervals for coefficients for fit_wt_qsec:
+```{r, ref.label='conf-wtqsec', eval=FALSE}
 ```
 
 # Appendix D: The Diagnosis Plots {-#app-diag}
