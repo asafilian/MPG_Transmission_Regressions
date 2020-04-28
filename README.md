@@ -1,4 +1,4 @@
-# MPG Transmission Regressions
+# Manual vs. Automatic: Which one is more economic?
 
 ![har](img/mpg4.jpg)
 
