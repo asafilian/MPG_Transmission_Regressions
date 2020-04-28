@@ -1,0 +1,1435 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={Analysis of Mile per Gallon vs.~Tranmission via Regression Models},
+            pdfauthor={Aliakbar Safilian},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Analysis of Mile per Gallon vs.~Tranmission via Regression Models}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Aliakbar Safilian\footnote{Email:
+  \href{mailto:a.a.safilian@gmail.com}{\nolinkurl{a.a.safilian@gmail.com}}}}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{January 21, 2019}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\usepackage{color}
+\usepackage{float}
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\newtheorem{theorem}{Theorem} \newtheorem{lemma}{Lemma}
+
+\section{Overview}\label{overview}
+
+In this report, we explore the relationship between a set of variables
+and \emph{miles per gallon} (MPG). The dataset of interest in this
+report is \textbf{mtcars} from the dataset package.
+
+The data includes the following variables:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{cyl}: Number of cylinders
+\item
+  \textbf{disp}: Displacement (cu.in.)
+\item
+  \textbf{hp}: Gross horsepower
+\item
+  \textbf{drat}: Rear axle ratio
+\item
+  \textbf{wt}: Weight (1000 lbs)
+\item
+  \textbf{qsec}: 1/4 mile time
+\item
+  \textbf{vs}: Engine shape, i.e., V-shaped or straight
+\item
+  \textbf{am}: Automatic (0) or manual (1) transimission
+\item
+  \textbf{gear}: Number of forward gears
+\item
+  \textbf{carb}: Number of carburetors
+\end{itemize}
+
+We are particularly interested in the following two questions:
+
+\begin{itemize}
+\tightlist
+\item
+  ``Is an automatic or manual transmission better for MPG''
+\item
+  ``Quantify the MPG difference between automatic and manual
+  transmissions''
+\end{itemize}
+
+In \protect\hyperlink{sec-prelim}{Sect.2}, we do some prelimanry
+analysis, including loading, transformation, and some summary and
+exploratory analysis. We show that, in general, we expect that manual
+transmission works better than automatic transmission with respect to
+fuel economy. We deeply investigate this in the subsequent sections,
+considering many other factors.
+
+In \protect\hyperlink{sec-single}{Sect.3}, for each numeric variable
+\(var\), we build a linear model with \textbf{mpg} as the output and
+\(var\) as the regressor considering its interaction with the
+transmission type. We first select linear models which are worth
+considering. Then, we address our main questions using by these linear
+models.
+
+In \protect\hyperlink{sec-mult}{Sect.4}, we consider multivariate
+regression models. Again, we select the best fitting models, and then
+study them to address our analysis questions.
+
+The R scripts of \protect\hyperlink{sec-prelim}{Sect.2},
+\protect\hyperlink{sec-single}{Sect.3}, and
+\protect\hyperlink{sec-mult}{Sect.4} can be found in
+\protect\hyperlink{app-code-2}{Appendix.A},
+\protect\hyperlink{app-code-3}{Appendix.B}, and
+\protect\hyperlink{app-code-4}{Appendix.C}.
+\protect\hyperlink{app-diag}{Appendix.D} include the diagnosis plots for
+the fitting models.
+
+We consider 0.05 as the significance rate in all statistical analyses in
+this report.
+
+\hypertarget{sec-prelim}{\section{Preliminary
+Analysis}\label{sec-prelim}}
+
+Let us first take a look at the structure of the data: (We transform
+\textbf{cyl} (number of cylinders), \textbf{vs} (engine shape),
+\textbf{am} (transmission), \textbf{gear}, and \textbf{carb} (number of
+carburetors) to their equivalent factor variables. Also, we have renamed
+the levels of the \textbf{am} and \textbf{vs} variables. Moreover, we
+have changed the unit of \textbf{wt} from 1000lb to tonne.)
+
+\begin{verbatim}
+'data.frame':   32 obs. of  11 variables:
+ $ mpg : num  21 21 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 ...
+ $ cyl : Factor w/ 3 levels "4","6","8": 2 2 1 2 3 2 3 1 1 2 ...
+ $ disp: num  160 160 108 258 360 ...
+ $ hp  : num  110 110 93 110 175 105 245 62 95 123 ...
+ $ drat: num  3.9 3.9 3.85 3.08 3.15 2.76 3.21 3.69 3.92 3.92 ...
+ $ wt  : num  1.19 1.3 1.05 1.46 1.56 ...
+ $ qsec: num  16.5 17 18.6 19.4 17 ...
+ $ vs  : Factor w/ 2 levels "v","s": 1 1 2 2 1 2 1 2 2 2 ...
+ $ am  : Factor w/ 2 levels "automatic","manual": 2 2 2 1 1 1 1 1 1 1 ...
+ $ gear: Factor w/ 3 levels "3","4","5": 2 2 2 1 1 1 1 2 2 2 ...
+ $ carb: Factor w/ 6 levels "1","2","3","4",..: 4 4 1 1 2 1 4 2 2 4 ...
+\end{verbatim}
+
+As we see in the boxplot in Fig. \ref{fig:boxplot}, in general, the
+manual transformation is better than the automatic transmission in the
+sense of fuel economy. The mean of MPG for automatic transmission and
+manual transmission are 17.15 and 24.39, respectively.\\
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.7\linewidth]{D7_MPG_files/figure-latex/boxplot-1} 
+
+}
+
+\caption{\label{fig:boxplot}The Box Plot for MPG per Transmission Type}\label{fig:boxplot}
+\end{figure}
+
+\hypertarget{sec-single}{\section{Single Variate Regression
+Models}\label{sec-single}}
+
+In this section, for each numeric variable \emph{var}, we build a linear
+model with MPG as the output and \emph{var} as the regressor considering
+its interaction with the transmission type, i.e., the model \(mpg\)
+\textasciitilde{} \(var * factor(am)\).
+
+In \protect\hyperlink{sec-sing-select}{Sect.3.1}, we select the linear
+models which are worth considering. In
+\protect\hyperlink{sec-fit-wt}{Sect.3.2},
+\protect\hyperlink{sec-fit-disp}{Sect.3.3}, and
+\protect\hyperlink{sec-fit-hp}{Sect.3.4}, we address our main analysis
+question on the selected models.
+
+\hypertarget{sec-sing-select}{\subsection{Model
+Selection}\label{sec-sing-select}}
+
+We show that
+
+\begin{theorem}
+The best three single variate models with mpg as the output are mpg $\sim$ wt*am, mpg $\sim$ disp*am, and mpg $\sim$ hp*am. $\square$
+\end{theorem}
+
+The rest of this section is devoted to the proof of the theorem.
+
+The correlation between the numeric variables in the dataset is shown in
+the chart in Fig. \ref{fig:cor-chart}. As we see in the chart, the
+correlation between \textbf{mpg} and \textbf{qsec}, i.e., 0.42, is not
+that high. Therefore, we ignore the model fitting of \textbf{mpg} vs.
+\textbf{qsec}.\\
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.7\linewidth]{D7_MPG_files/figure-latex/corchart-1} 
+
+}
+
+\caption{\label{fig:cor-chart}The Correlation Chart}\label{fig:corchart}
+\end{figure}
+
+Our models are as follow. Note that the weigth unit in the dataset is
+1000lb; however, we change it to tonne.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_wt <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit_disp <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp  }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit_hp <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit_drat <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{drat }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+Since the above models are non-nested models, we take advantage of the
+\emph{coxtest} function from the \emph{lmtest} package to test them. In
+Table. \ref{tab:tab-pvalue}, each row and column belongs to a fitting
+model. For any \(1 \leq i, j \leq 4\), the cell in the position
+\([i,j]\) represents the P-value of comparing \(m_i\) against \(n_j\),
+where (\(\forall t\)) \(m_t\) denotes the fitted model in row \(t\), and
+\(n_t\) denotes the model represented in column \(j\).
+
+\begin{table}[!h]
+
+\caption{\label{tab:tab-pvalue}P-values of Comparing Single Variate Models by coxtest}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  &    fit\_wt &    fit\_disp &    fit\_hp &    fit\_drat\\
+\midrule
+fit\_wt & 0 & 0.01 & 0.00 & 0.38\\
+fit\_disp & 0 & 0.00 & 0.03 & 0.11\\
+fit\_hp & 0 & 0.01 & 0.00 & 0.15\\
+fit\_drat & 0 & 0.00 & 0.00 & 0.00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Considering \(0.05\) as our significance rate, the results are as
+follow:
+
+\begin{itemize}
+\item
+  All other fitting models are preferred over the model fit\_drat.
+\item
+  The models other than fit\_drat have no preference over each other,
+  though the best among all the models is fit\_wt.
+\end{itemize}
+
+Therefore, we discard the model fit\_drat.
+
+One could find the corresponding diagnosis plots in
+\protect\hyperlink{app-diag-1}{Appendix. 1}. As we see in the diagnostic
+plots, everything (including normality of errors and residuals) looks
+more less ok for the fitting models.
+
+In the rest of this section, we investigate the fitting models excluding
+\textbf{fit\_drat}.
+
+\hypertarget{sec-fit-wt}{\subsection{MPG vs.~Weight}\label{sec-fit-wt}}
+
+The first model that we study is fit\_wt, i.e., mpg \(\sim\) wt*am. Let
+us take a look at its coefficients:
+
+\begin{verbatim}
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)            31.42       3.02   10.40        0
+wt                     -8.35       1.73   -4.82        0
+factor(am)manual       14.88       4.26    3.49        0
+wt:factor(am)manual   -11.68       3.19   -3.67        0
+\end{verbatim}
+
+The 95\% confidence intervals of the coefficients are represented in the
+following table.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & Intercept & wt & factor.am.manual & wt.factor.am.manual\\
+\midrule
+Lower & 25.23 & -11.89 & 6.15 & -18.21\\
+Upper & 37.61 & -4.81 & 23.61 & -5.15\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The estimated intercept in automatic transmission is about 31.42, and
+14.88 is the estimated change in the intercept of the linear
+relationship between weigth and MPG going from automatic transmission to
+manual transmission. The estimated slope in automatic transmission is
+-8.35 while the estimated change in the slope switching from automatic
+to manual is -11.68. In other words:
+
+\begin{itemize}
+\item
+  The estimated MPG for automatic and manual vehicles with 0 weight are
+  31.42 and 46.3, respectively.
+\item
+  The expected change in MPG per 1 tonne change in weight for automatic
+  and manual vehicles are -8.35 and -20.03, respectively.
+\end{itemize}
+
+Fig. \ref{fig:fit_wt} represents the corresponding plot, where the
+regression lines for automatic transmission and manaual transmission are
+shown in red and blue, respectively.
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.7\linewidth]{D7_MPG_files/figure-latex/plot-fitwt-1} 
+
+}
+
+\caption{\label{fig:fit_wt}MPG vs. Weight}\label{fig:plot-fitwt}
+\end{figure}
+
+As it is clear heavier vehicle results in more fuel consumption. The
+regression lines meets at point \textbf{1.27} tonne. As seen, we predict
+that for vehicles with weight less (more, respectively) than 1.27 tonne,
+the manual (automatic, respectively) transmission is a better for fuel
+economy.
+
+\hypertarget{sec-fit-disp}{\subsection{MPG
+vs.~Displacement}\label{sec-fit-disp}}
+
+The next model is fit\_disp, i.e., mpg \(\sim\) disp*am whose
+coefficients are as follow:
+
+\begin{verbatim}
+                      Estimate Std. Error t value Pr(>|t|)
+(Intercept)              25.16       1.93   13.07     0.00
+disp                     -0.03       0.01   -4.44     0.00
+factor(am)manual          7.71       2.50    3.08     0.00
+disp:factor(am)manual    -0.03       0.01   -2.75     0.01
+\end{verbatim}
+
+The 95\% confidence intervals of the coefficients are represented in the
+following table.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & Intercept & disp & factor.am.manual & disp.factor.am.manual\\
+\midrule
+Lower & 21.21 & -0.05 & 2.59 & -0.05\\
+Upper & 29.11 & -0.01 & 12.83 & -0.01\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The estimated intercept in automatic transmission is about 25.16, while
+7.71 is the estimated change in the intercept of the linear relationship
+between displacement and MPG going from automatic transmission to manual
+transmission. The estimated slope in automatic transmission is -0.03
+while the estimated change in the slope switching from automatic to
+manual is -0.03. In other words:
+
+\begin{itemize}
+\item
+  The estimated MPG for automatic transmission and manual transmission
+  vehicles with 0 cu.in. displacement are 25.16 and 32.87, respectively.
+\item
+  The expected change in MPG per 1 cu.in. change in displacement for
+  automatic and manual vehicles are -0.03 and -0.06, respectively.
+\end{itemize}
+
+Fig. \ref{fig:fit_disp} the corresponding plot, where the regression
+lines for automatic transmission and manaual transmission are shown in
+blue and red, respectively.
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.7\linewidth]{D7_MPG_files/figure-latex/plot-fitdisp-1} 
+
+}
+
+\caption{\label{fig:fit_disp}MPG vs. Displacement}\label{fig:plot-fitdisp}
+\end{figure}
+
+As it is clear, higher displacement results in more fuel consumption.
+The regression lines meets at point \textbf{257} cu.in. As seen in the
+plot, we predict that for vehicles with displacement less (more,
+respectively) than 257 (cu.in.), the manual (automatic, respectively)
+transmission workes better w.r.t fuel economy.
+
+\hypertarget{sec-fit-hp}{\subsection{MPG
+vs.~Horsepower}\label{sec-fit-hp}}
+
+The last model to study is fit\_hp, i.e., mpg \(\sim\) hp*am with the
+following coefficients:
+
+\begin{verbatim}
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)            26.62       2.18   12.20     0.00
+hp                     -0.06       0.01   -4.57     0.00
+factor(am)manual        5.22       2.67    1.96     0.06
+hp:factor(am)manual     0.00       0.02    0.02     0.98
+\end{verbatim}
+
+The 95\% confidence intervals of the coefficients are represented in the
+following table.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & Intercept & hp & factor.am.manual & hp.factor.am.manual\\
+\midrule
+Lower & 22.15 & -0.08 & -0.25 & -0.04\\
+Upper & 31.09 & -0.04 & 10.69 & 0.04\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The estimated intercept in automatic transmission is about 26.62. 5.22
+is the estimated change in the intercept of the linear relationship
+between horsepower and MPG going from automatic transmission to manual
+transmission. The estimated slope in automatic transmission is -0.06
+while the estimated change in the slope switching from automatic to
+manual is about 0. This shows that there is no signigicant interaction
+between \textbf{am} and \textbf{hp}. In other words:
+
+\begin{itemize}
+\tightlist
+\item
+  The expected MPG for automatic transmission and manual transmission
+  vehicles with horsepower 0 are 26.62 and 31.84, respectively.\\
+\item
+  The expected change in MPG per unit change in horsepower for both
+  automatic and manual vehicles is about -0.06.
+\end{itemize}
+
+Note that the second bullet implies that the corresponding regression
+lines for automatic and manual would be parallel. Fig. \ref{fig:fit_hp}
+represents the corresponding plot, where the regression lines for
+automatic transmission and manaual transmission are shown in red and
+blue, respectively.
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.7\linewidth]{D7_MPG_files/figure-latex/plot-fithp-1} 
+
+}
+
+\caption{\label{fig:fit_hp}MPG vs. Horsepower}\label{fig:plot-fithp}
+\end{figure}
+
+Clearly, higher horsepower results in worse fuel economy. As seen in the
+above plot, we predict that manual transmission is always better than
+automatic transmission with respect to fuel economy for a given
+horsepower.
+
+\hypertarget{sec-mult}{\section{Multivariate Regression
+Models}\label{sec-mult}}
+
+In this section, we consider more complicated models, i.e., multivariate
+regression models.
+
+The structure of this section is as follows: In
+\protect\hyperlink{sec-mult-select}{Sect.4.1}, we select the
+multivariate linear regression models which are worth considering. In
+\protect\hyperlink{sec-fit-wthp}{Sect.4.2} and
+\protect\hyperlink{sec-fit-wtqsec}{Sect.4.3}, we address our main
+analysis question on the selected models.
+
+\hypertarget{sec-mult-select}{\subsection{Model
+Selection}\label{sec-mult-select}}
+
+We show that:
+
+\begin{theorem}
+The best two fitting linear models with mpg as the output are mpg $\sim$ wt+hp and mpg $\sim$ wt+qsec. $\square$
+\end{theorem}
+
+As we already saw, among the single variate models, the models worth to
+consider are \textbf{Model1}: mpg\textasciitilde{}wt, \textbf{Model2}:
+mpg\textasciitilde{}hp, and \textbf{Model3}: mpg\textasciitilde{}disp.
+Now, we want to see if adding some new regressors to these models make
+sense. We show that
+
+\begin{lemma}\label{lem:lem1}
+The best models including wt as a regressor are mpg $\sim$ wt+hp and mpg $\sim$ wt+qsec. $\square$ 
+\end{lemma}
+
+\begin{lemma}\label{lem:lem2}
+The best model including hp as a must regressor is mpg $\sim$ hp+wt.  $\square$
+\end{lemma}
+
+\begin{lemma}\label{lem:lem3}
+Considering disp as a must regressor in our models, the best linear model is mpg $\sim$ disp+wt. $\square$ 
+\end{lemma}
+
+Note that these three lemmas together prove our main theorem.
+
+\subsubsection{\texorpdfstring{Proof of Lemma.
+\ref{lem:lem1}}{Proof of Lemma. }}\label{proof-of-lemma.}
+
+Let us first see if adding some regressors to mpg\textasciitilde{}wt
+makes senses. We take advantage of the \emph{anova} function to address
+this question. The P-values for comparing the model \(mpg\)
+\textasciitilde{} \(wt\) vs. \(mpg\) \textasciitilde{} \(wt + var\),
+where \(var \in \{disp, hp, drat, qsec\}\) are represented in Table.
+\ref{tab:test-mult-wt}.
+
+\begin{table}[!h]
+
+\caption{\label{tab:test-mult-wt}P-values of Comparing 2-variate Models with wt as the Regressor}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & mpg\textasciitilde{}wt+disp &   mpg\textasciitilde{}wt+hp &   mpg\textasciitilde{}wt+drat &   mpg\textasciitilde{}wt+qsec\\
+\midrule
+mpg\textasciitilde{}wt & 0.06 & 0 & 0.33 & 0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Considering the significance rate 0.05, we see that only the two models
+``mpg \textasciitilde{} wt + hp'' and ``mpg \textasciitilde{} wt +
+qsec'' are preferred over mpg \textasciitilde{} wt. Now, let us see
+which of these two models works better:
+
+\begin{verbatim}
+Cox test
+
+Model 1: mpg ~ wt + hp
+Model 2: mpg ~ wt + qsec
+                Estimate Std. Error z value Pr(>|z|)
+fitted(M1) ~ M2    -2.25       1.54   -1.46     0.14
+fitted(M2) ~ M1    -2.30       1.53   -1.50     0.13
+\end{verbatim}
+
+Therefore, considering 0.05 as the significance rate, none of them are
+preferred over the other.
+
+Now, let us see if their combination, i.e., mpg \textasciitilde{} wt +
+hp + qsec, works better. In the following, we show that mpg
+\textasciitilde{} wt + hp + qsec is NOT preferred over mpg
+\textasciitilde{} wt + hp.
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Model 1: mpg ~ wt + hp
+Model 2: mpg ~ wt + hp + qsec
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1     29 195.05                           
+2     28 186.06  1    8.9885 1.3527 0.2546
+\end{verbatim}
+
+Now, we show that mpg \textasciitilde{} wt + hp + qsec is NOT preferred
+over mpg \textasciitilde{} wt + qsec:
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Model 1: mpg ~ wt + qsec
+Model 2: mpg ~ wt + hp + qsec
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1     29 195.46                           
+2     28 186.06  1    9.4043 1.4153 0.2442
+\end{verbatim}
+
+Therefore, we showed that the best models including \textbf{wt} as a
+must regressor is \emph{mpg \textasciitilde{} wt + hp} or \emph{mpg
+\textasciitilde{} wt + qsec}. Lemma. \ref{lem:lem1} was proven.
+
+\subsubsection{\texorpdfstring{Proof of Lemma.
+\ref{lem:lem2}}{Proof of Lemma. }}\label{proof-of-lemma.-1}
+
+Let us now see if adding some regressors to mpg \textasciitilde{} hp
+makes our fitting model any better. Again, we apply the \emph{anova}
+function to address this question. The P-value for comparing the model
+mpg\textasciitilde{}hp vs.~mpg\textasciitilde{}hp+\(var\), where
+\(var \in \{disp, wt, drat, qsec\}\) are represented in Table.
+\ref{tab:test-mult-hp}.
+
+\begin{table}[!h]
+
+\caption{\label{tab:test-mult-hp}P-values of Comparing 2-variate Models with hp as the Regressor}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & mpg\textasciitilde{}hp+disp &   mpg\textasciitilde{}hp+wt &   mpg\textasciitilde{}hp+drat &   mpg\textasciitilde{}hp+qsec\\
+\midrule
+mpg\textasciitilde{}hp & 0 & 0 & 0 & 0.11\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Considering the significance rate 0.05, all the models excluding
+mpg\textasciitilde{}hp+qsec are preferred over mpg\textasciitilde{}hp.
+Now, using the \emph{coxtest} command, we want to see which of them
+works the best:
+
+The following tables show that \emph{mpg\textasciitilde{}hp+wt} has
+preference over mpg\textasciitilde{}hp+disp and
+mpg\textasciitilde{}hp+drat:
+
+\begin{verbatim}
+Cox test
+
+Model 1: mpg ~ hp + disp
+Model 2: mpg ~ hp + wt
+                Estimate Std. Error z value  Pr(>|z|)    
+fitted(M1) ~ M2  -9.0487     1.7108 -5.2892 1.229e-07 ***
+fitted(M2) ~ M1  -0.2062     2.1047 -0.0980     0.922    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+Cox test
+
+Model 1: mpg ~ hp + wt
+Model 2: mpg ~ hp + drat
+                Estimate Std. Error z value  Pr(>|z|)    
+fitted(M1) ~ M2  -2.9554     1.7423 -1.6963   0.08983 .  
+fitted(M2) ~ M1 -10.9891     1.5147 -7.2548 4.023e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+Therefore, we showed that the best model including \textbf{hp} as a must
+regressor is \emph{mpg\textasciitilde{}hp+wt}. Lemma. \ref{lem:lem2} is
+proven.
+
+\subsubsection{\texorpdfstring{Proof of Lemma.
+\ref{lem:lem3}}{Proof of Lemma. }}\label{proof-of-lemma.-2}
+
+The last model to be considered is mpg\textasciitilde{}disp. Applying
+the \emph{anova} function, the P-values for comparing the model
+mpg\textasciitilde{}disp vs.~mpg\textasciitilde{}disp+\(var\), where
+\(var \in \{hp, wt, drat, qsec\}\) are represented in Table.
+\ref{tab:test-mult-disp}.
+
+As we see in the table, \emph{mpg\textasciitilde{}disp+wt} is the only
+model which is preferred over mpg\textasciitilde{}disp. In other words,
+considering disp as a must regressor in our models, the best linear
+model is \emph{mpg\textasciitilde{}disp+wt}. Lemma. \ref{lem:lem3} is
+proven.
+
+\begin{table}[!h]
+
+\caption{\label{tab:test-mult-disp}P-values of Comparing 2-variate Models with disp as the Regressor}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+  & mpg\textasciitilde{}disp+hp &   mpg\textasciitilde{}disp+wt &   mpg\textasciitilde{}disp+drat &   mpg\textasciitilde{}dispp+qsec\\
+\midrule
+mpg\textasciitilde{}disp & 0.07 & 0.01 & 0.25 & 0.57\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{sec-fit-wthp}{\subsection{MPG vs.~Weight plus
+Horsepower}\label{sec-fit-wthp}}
+
+In this section, we study the model with \textbf{wt} and \textbf{hp} as
+regressors. Let's first consider the full interaction between
+transmission type and the regressors, i.e., the following model:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_wt_hp <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{(wt }\OperatorTok{+}\StringTok{ }\NormalTok{hp) }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the model are as follow:
+
+\begin{verbatim}
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)            30.70       2.68   11.48     0.00
+wt                     -4.09       2.08   -1.96     0.06
+hp                     -0.04       0.01   -3.00     0.01
+factor(am)manual       13.74       4.22    3.25     0.00
+wt:factor(am)manual   -12.72       4.57   -2.78     0.01
+hp:factor(am)manual     0.03       0.02    1.45     0.16
+\end{verbatim}
+
+As we see, the P-value for the interaction of \textbf{hp} and
+\textbf{am} is not significant. Moreover, the P-value for the
+coefficient \textbf{wt} is a little higher than the sigficance rate
+(0.05). Therefore, we modify the model as follows:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_wt_hp <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{(wt }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am)) }\OperatorTok{+}\StringTok{ }\NormalTok{hp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the model are as follow:
+
+\begin{verbatim}
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)            30.95       2.72   11.36     0.00
+wt                     -5.55       1.86   -2.98     0.01
+factor(am)manual       11.55       4.02    2.87     0.01
+hp                     -0.03       0.01   -2.75     0.01
+wt:factor(am)manual    -7.89       3.18   -2.48     0.02
+\end{verbatim}
+
+The 95\% confidence intervals of the coefficients are represented in the
+following table.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+  & Intercept & wt & factor.am.manual & hp & wt.factor.am.manual\\
+\midrule
+Lower & 25.37 & -9.37 & 3.3 & -0.05 & -14.41\\
+Upper & 36.53 & -1.73 & 19.8 & -0.01 & -1.37\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The estimated intercept in automatic transmission is about 30.95, and
+11.55 is the estimated change in the intercept of the linear
+relationship going from automatic transmission to manual transmission.
+The estimated coefficient of weigth in automatic transmission is -5.55
+while the estimated change in the weigth coefficient switching from
+automatic to manual is -7.89. The estimated coefficient of horsepower is
+-0.03.
+
+In other words:
+
+\begin{itemize}
+\item
+  The estimated MPG is 30.95 and 42.5 for the automatic transmission and
+  the manual transmission vehicle with weight 0 and horsepower 0,
+  respectively.
+\item
+  The expected change in MPG for an automatic transmission and manual
+  transmission per tonne change in weight are -5.55 and -13.44,
+  respectively, by holding the horsepwer constant.
+\item
+  The expected change in MPG for both automatic and manual vehicle per
+  unit change in horsepower is -0.03, by holding weight constant.
+\end{itemize}
+
+We have represented the diagnosis plots of this model in Fig.
+\ref{fig:diag-2-hp}.
+
+\hypertarget{sec-fit-wtqsec}{\subsection{MPG vs.~Weight plus
+1/4-Mile-Time}\label{sec-fit-wtqsec}}
+
+In this section, we study the model with \textbf{wt} and \textbf{qsec}
+as regressors. We first consider the full interaction between
+transmission type and the regressors, i.e., the following model:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_wt_qsec <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{(wt }\OperatorTok{+}\StringTok{ }\NormalTok{qsec) }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am), }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the model are as follow:
+
+\begin{verbatim}
+                      Estimate Std. Error t value Pr(>|t|)
+(Intercept)              11.25       6.99    1.61     0.12
+wt                       -6.61       1.52   -4.34     0.00
+qsec                      0.95       0.31    3.08     0.00
+factor(am)manual          8.93      12.67    0.70     0.49
+wt:factor(am)manual      -8.29       3.34   -2.48     0.02
+qsec:factor(am)manual     0.24       0.56    0.42     0.68
+\end{verbatim}
+
+As we see, the P-value for the interaction of \textbf{qsec} and
+\textbf{am} is not significant. Therefore, we modify the model as
+follows:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_wt_qsec <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{(wt }\OperatorTok{*}\StringTok{ }\KeywordTok{factor}\NormalTok{(am)) }\OperatorTok{+}\StringTok{ }\NormalTok{qsec, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the new model are as follow:
+
+\begin{verbatim}
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)             9.72       5.90    1.65     0.11
+wt                     -6.47       1.47   -4.41     0.00
+factor(am)manual       14.08       3.44    4.10     0.00
+qsec                    1.02       0.25    4.04     0.00
+wt:factor(am)manual    -9.13       2.64   -3.46     0.00
+\end{verbatim}
+
+The 95\% confidence intervals of the coefficients are represented in the
+following table.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+  & Intercept & wt & factor.am.manual & qsec & wt.factor.am.manual\\
+\midrule
+Lower & -2.39 & -9.49 & 7.02 & 0.51 & -14.55\\
+Upper & 21.83 & -3.45 & 21.14 & 1.53 & -3.71\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Since the P-value associated with intercept is high, our estimated
+intercept in automatic transmission is 0. 14.08 is the estimated change
+in the intercept of the linear relationship going from automatic
+transmission to manual transmission. The estimated coefficient of weigth
+in automatic transmission is -6.47 while the estimated change in the
+weigth coefficient switching from automatic to manual is -9.13. The
+estimated coefficient of qsec is 1.02.
+
+In other words:
+
+\begin{itemize}
+\item
+  The estimated MPG is 0 for an automatic transmission vehicle with
+  weight 0 and qsect 0.
+\item
+  The estimated MPG is 14.08 for a manual transmission vehicle with
+  weight 0 and qsect 0.
+\item
+  The expected change in MPG for an automatic transmission vehicle per
+  tonne change in weight is -6.47, by holding the qsec constant.
+\item
+  The expected change in MPG for an automatic manual vehicle per tonne
+  change in weight is -15.6, by holding the qsec constant.
+\item
+  The expected change in MPG for both automatic and manual vehicle per
+  unit change in qsec is 1.02, by holding weight constant
+\end{itemize}
+
+The diagnosis plot of this models can be found in Fig.
+\ref{fig:diag-2-qsec}.
+
+\hypertarget{app-code-2}{\section*{\texorpdfstring{Appendix A: R Scripts
+of \protect\hyperlink{sec-prelim}{Sect.
+2}}{Appendix A: R Scripts of Sect. 2}}\label{app-code-2}}
+\addcontentsline{toc}{section}{Appendix A: R Scripts of
+\protect\hyperlink{sec-prelim}{Sect. 2}}
+
+Loading and transforming the data:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(datasets)}
+\KeywordTok{data}\NormalTok{(}\StringTok{"mtcars"}\NormalTok{)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{am <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{am)}
+\KeywordTok{levels}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{am) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{cyl <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{cyl)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{vs <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{vs)}
+\KeywordTok{levels}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{vs) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"v"}\NormalTok{, }\StringTok{"s"}\NormalTok{)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{gear <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{gear)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{carb <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(mtcars}\OperatorTok{$}\NormalTok{carb)}
+\NormalTok{mtcars}\OperatorTok{$}\NormalTok{wt <-}\StringTok{ }\NormalTok{mtcars}\OperatorTok{$}\NormalTok{wt}\OperatorTok{/}\FloatTok{2.20462}
+\KeywordTok{str}\NormalTok{(mtcars)}
+\end{Highlighting}
+\end{Shaded}
+
+The boxplot for MPG per each transmission type:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\KeywordTok{qplot}\NormalTok{(am, mpg, }\DataTypeTok{data =}\NormalTok{ mtcars, }\DataTypeTok{colour =}\NormalTok{ am) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_boxplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{        }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Transmission"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{ylab}\NormalTok{(}\StringTok{"MPG"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{app-code-3}{\section*{\texorpdfstring{Appendix B: R Scripts
+of \protect\hyperlink{sec-single}{Sect.
+3}}{Appendix B: R Scripts of Sect. 3}}\label{app-code-3}}
+\addcontentsline{toc}{section}{Appendix B: R Scripts of
+\protect\hyperlink{sec-single}{Sect. 3}}
+
+The correlation chart:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(corrplot)}
+\KeywordTok{library}\NormalTok{(PerformanceAnalytics)}
+\KeywordTok{chart.Correlation}\NormalTok{(mtcars[, }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{3}\OperatorTok{:}\DecValTok{7}\NormalTok{)], }\DataTypeTok{histogram=}\OtherTok{TRUE}\NormalTok{, }\DataTypeTok{pch=}\DecValTok{19}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Code of Table. \ref{tab:tab-pvalue} (P-values of Comparing Single
+Variate Models)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(lmtest)}
+\NormalTok{wt_disp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_wt, fit_disp)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{wt_hp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_wt, fit_hp)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{wt_drat <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_wt, fit_drat)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{disp_hp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_disp, fit_hp)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{disp_drat <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_disp, fit_drat)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{hp_drat <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit_hp, fit_drat)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>|z|)}\StringTok{`}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\NormalTok{wt_c <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, wt_disp[}\DecValTok{2}\NormalTok{], wt_hp[}\DecValTok{2}\NormalTok{], wt_drat[}\DecValTok{2}\NormalTok{])}
+\NormalTok{disp_c <-}\StringTok{ }\KeywordTok{c}\NormalTok{(wt_disp[}\DecValTok{1}\NormalTok{], }\DecValTok{0}\NormalTok{, disp_hp[}\DecValTok{2}\NormalTok{], disp_drat[}\DecValTok{2}\NormalTok{])}
+\NormalTok{hp_c <-}\StringTok{ }\KeywordTok{c}\NormalTok{(wt_hp[}\DecValTok{1}\NormalTok{], disp_hp[}\DecValTok{1}\NormalTok{], }\DecValTok{0}\NormalTok{, hp_drat[}\DecValTok{2}\NormalTok{])}
+\NormalTok{drat_c <-}\StringTok{ }\KeywordTok{c}\NormalTok{(wt_drat[}\DecValTok{1}\NormalTok{], disp_drat[}\DecValTok{1}\NormalTok{], hp_drat[}\DecValTok{1}\NormalTok{], }\DecValTok{0}\NormalTok{)}
+\NormalTok{tests_pval <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(wt_c, disp_c, hp_c, drat_c))}
+\KeywordTok{row.names}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"fit_wt"}\NormalTok{, }\StringTok{"fit_disp"}\NormalTok{, }\StringTok{"fit_hp"}\NormalTok{, }\StringTok{"fit_drat"}\NormalTok{)}
+\KeywordTok{colnames}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{paste}\NormalTok{(}\StringTok{"   "}\NormalTok{, }\KeywordTok{row.names}\NormalTok{(tests_pval), }\DataTypeTok{sep =} \StringTok{""}\NormalTok{)}
+
+\KeywordTok{library}\NormalTok{(knitr)}
+\KeywordTok{library}\NormalTok{(kableExtra)}
+\KeywordTok{kable}\NormalTok{(tests_pval, }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T,  }
+      \DataTypeTok{caption =} \StringTok{"P-values of Comparing Single Variate Models by coxtest"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \StringTok{"hold_position"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of fit\_wt:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_wt <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_wt)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_wt}
+\end{Highlighting}
+\end{Shaded}
+
+The 95\% confidence interval for the fit\_wt coefficients:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{q <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{qt}\NormalTok{(.}\DecValTok{975}\NormalTok{, }\DataTypeTok{df =}\NormalTok{ fit_wt}\OperatorTok{$}\NormalTok{df)}
+\NormalTok{int_aut <-}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{int_aut2man <-}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut <-}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut2man <-}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{4}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+ 
+
+\NormalTok{conf_wt <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Intercept =}\NormalTok{ int_aut, }
+                          \DataTypeTok{wt =}\NormalTok{ wt_aut,  }
+                          \StringTok{`}\DataTypeTok{factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{int_aut2man, }
+                          \StringTok{`}\DataTypeTok{wt:factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{wt_aut2man)}
+
+\KeywordTok{row.names}\NormalTok{(conf_wt) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Lower"}\NormalTok{, }\StringTok{"Upper"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{round}\NormalTok{(conf_wt, }\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{position =} \StringTok{"center"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The corresponding plot for fit\_wt
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{line <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{intercept =} \KeywordTok{c}\NormalTok{( cff_wt[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_wt[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{3}\NormalTok{, }\DecValTok{1}\NormalTok{]),}
+                   \DataTypeTok{slope =} \KeywordTok{c}\NormalTok{( cff_wt[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_wt[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_wt[}\DecValTok{4}\NormalTok{, }\DecValTok{1}\NormalTok{]), }
+                   \DataTypeTok{row.names =} \KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{) )}
+\NormalTok{x_com_wt <-}\StringTok{ }\NormalTok{(line[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{-}\StringTok{ }\NormalTok{line[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{]) }\OperatorTok{/}\StringTok{ }\NormalTok{(line[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }\OperatorTok{-}\StringTok{ }\NormalTok{line[}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{]) }
+\KeywordTok{qplot}\NormalTok{(wt, mpg, }\DataTypeTok{data =}\NormalTok{ mtcars) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Weigth (Tonne)"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{ylab}\NormalTok{(}\StringTok{"Mile per Gallon"}\NormalTok{) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{geom_abline}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{intercept=}\NormalTok{intercept, }\DataTypeTok{slope=}\NormalTok{slope, }
+                        \DataTypeTok{colour=}\KeywordTok{c}\NormalTok{(}\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{)), }\DataTypeTok{data=}\NormalTok{line) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.title=}\KeywordTok{element_blank}\NormalTok{()) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{labels =} \KeywordTok{c}\NormalTok{(}\StringTok{"manual"}\NormalTok{, }\StringTok{"automatic"}\NormalTok{), }\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"blue"}\NormalTok{, }\StringTok{"red"}\NormalTok{)) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{geom_vline}\NormalTok{(}\DataTypeTok{xintercept =}\NormalTok{ x_com_wt, }\DataTypeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{geom_text}\NormalTok{(}\KeywordTok{aes}\NormalTok{(x_com_wt}\OperatorTok{+}\FloatTok{0.12}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DataTypeTok{label =} \KeywordTok{round}\NormalTok{(x_com_wt, }\DecValTok{2}\NormalTok{)), }\DataTypeTok{size =} \DecValTok{3}\NormalTok{, }
+                  \DataTypeTok{color =} \StringTok{"purple"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of fit\_disp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_disp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_disp)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_disp}
+\end{Highlighting}
+\end{Shaded}
+
+The 95\% confidence interval for coefficients of fit\_disp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{q <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{qt}\NormalTok{(.}\DecValTok{975}\NormalTok{, }\DataTypeTok{df =}\NormalTok{ fit_disp}\OperatorTok{$}\NormalTok{df)}
+\NormalTok{int_aut <-}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{int_aut2man <-}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{disp_aut <-}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{disp_aut2man <-}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{4}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+ 
+
+\NormalTok{conf_disp <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Intercept =}\NormalTok{ int_aut, }
+                          \DataTypeTok{disp =}\NormalTok{ disp_aut,  }
+                          \StringTok{`}\DataTypeTok{factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{int_aut2man, }
+                          \StringTok{`}\DataTypeTok{disp:factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{disp_aut2man)}
+
+\KeywordTok{row.names}\NormalTok{(conf_disp) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Lower"}\NormalTok{, }\StringTok{"Upper"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{round}\NormalTok{(conf_disp, }\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{position =} \StringTok{"center"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The corresponding plot for fit\_disp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{line <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{intercept =} \KeywordTok{c}\NormalTok{( cff_disp[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_disp[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{3}\NormalTok{, }\DecValTok{1}\NormalTok{]),}
+                   \DataTypeTok{slope =} \KeywordTok{c}\NormalTok{( cff_disp[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_disp[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_disp[}\DecValTok{4}\NormalTok{, }\DecValTok{1}\NormalTok{]), }
+                   \DataTypeTok{row.names =} \KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{) )}
+\NormalTok{x_com_disp <-}\StringTok{ }\NormalTok{(line[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{-}\StringTok{ }\NormalTok{line[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{]) }\OperatorTok{/}\StringTok{ }\NormalTok{(line[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }\OperatorTok{-}\StringTok{ }\NormalTok{line[}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{]) }
+\KeywordTok{qplot}\NormalTok{(disp, mpg, }\DataTypeTok{data =}\NormalTok{ mtcars) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{geom_abline}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{intercept=}\NormalTok{intercept, }\DataTypeTok{slope=}\NormalTok{slope,}
+                        \DataTypeTok{colour=}\KeywordTok{c}\NormalTok{(}\StringTok{"blue"}\NormalTok{, }\StringTok{"red"}\NormalTok{)), }\DataTypeTok{data=}\NormalTok{line) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.title=}\KeywordTok{element_blank}\NormalTok{()) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{labels =} \KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{), }\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{)) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{geom_vline}\NormalTok{(}\DataTypeTok{xintercept =}\NormalTok{ x_com_disp, }\DataTypeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{geom_text}\NormalTok{(}\KeywordTok{aes}\NormalTok{(x_com_disp}\OperatorTok{+}\DecValTok{10}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DataTypeTok{label =} \KeywordTok{round}\NormalTok{(x_com_disp, }\DecValTok{2}\NormalTok{)), }\DataTypeTok{size =} \DecValTok{3}\NormalTok{,}
+                  \DataTypeTok{color =} \StringTok{"purple"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of fit\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_hp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_hp)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_hp}
+\end{Highlighting}
+\end{Shaded}
+
+The 95\% confidence interval for the coefficients of fit\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{q <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{qt}\NormalTok{(.}\DecValTok{975}\NormalTok{, }\DataTypeTok{df =}\NormalTok{ fit_hp}\OperatorTok{$}\NormalTok{df)}
+\NormalTok{int_aut <-}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{int_aut2man <-}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{hp_aut <-}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{hp_aut2man <-}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{4}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+ 
+
+\NormalTok{conf_hp <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Intercept =}\NormalTok{ int_aut, }
+                          \DataTypeTok{hp =}\NormalTok{ hp_aut,  }
+                          \StringTok{`}\DataTypeTok{factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{int_aut2man, }
+                          \StringTok{`}\DataTypeTok{hp:factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{hp_aut2man)}
+
+\KeywordTok{row.names}\NormalTok{(conf_hp) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Lower"}\NormalTok{, }\StringTok{"Upper"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{round}\NormalTok{(conf_hp, }\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{position =} \StringTok{"center"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The corresponding plot for fit\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{line <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{intercept =} \KeywordTok{c}\NormalTok{( cff_hp[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_hp[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{3}\NormalTok{, }\DecValTok{1}\NormalTok{]),}
+                   \DataTypeTok{slope =} \KeywordTok{c}\NormalTok{( cff_hp[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{], cff_hp[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{cff_hp[}\DecValTok{4}\NormalTok{, }\DecValTok{1}\NormalTok{]), }
+                   \DataTypeTok{row.names =} \KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{) )}
+
+\KeywordTok{qplot}\NormalTok{(hp, mpg, }\DataTypeTok{data =}\NormalTok{ mtcars) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{geom_abline}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{intercept=}\NormalTok{intercept, }\DataTypeTok{slope=}\NormalTok{slope,}
+                        \DataTypeTok{colour=}\KeywordTok{c}\NormalTok{(}\StringTok{"blue"}\NormalTok{, }\StringTok{"red"}\NormalTok{)), }\DataTypeTok{data=}\NormalTok{line) }\OperatorTok{+}\StringTok{ }
+\StringTok{        }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.title=}\KeywordTok{element_blank}\NormalTok{()) }\OperatorTok{+}
+\StringTok{        }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{labels =} \KeywordTok{c}\NormalTok{(}\StringTok{"automatic"}\NormalTok{, }\StringTok{"manual"}\NormalTok{), }\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{app-code-4}{\section*{\texorpdfstring{Appendix C: R Scripts
+of \protect\hyperlink{sec-mult}{Sect.
+4}}{Appendix C: R Scripts of Sect. 4}}\label{app-code-4}}
+\addcontentsline{toc}{section}{Appendix C: R Scripts of
+\protect\hyperlink{sec-mult}{Sect. 4}}
+
+The script for Table. \ref{tab:test-mult-wt}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit11 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit12 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{+}\StringTok{ }\NormalTok{disp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit13 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{+}\StringTok{ }\NormalTok{hp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit14 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{+}\StringTok{ }\NormalTok{drat, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit15 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{+}\StringTok{ }\NormalTok{qsec, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+
+\NormalTok{disp_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit11, fit12)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{hp_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit11, fit13)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{drat_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit11, fit14)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{qsec_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit11, fit15)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+
+
+\NormalTok{tests_pval <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(disp_val, hp_val, drat_val, qsec_val))}
+\KeywordTok{row.names}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~wt"}\NormalTok{)}
+\KeywordTok{colnames}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~wt+disp"}\NormalTok{, }\StringTok{"  mpg~wt+hp"}\NormalTok{, }\StringTok{"  mpg~wt+drat"}\NormalTok{, }\StringTok{"  mpg~wt+qsec"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(tests_pval, }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T, }
+      \DataTypeTok{caption =} \StringTok{"P-values of Comparing 2-variate Models with wt as the Regressor"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \StringTok{"hold_position"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Comparing two models mpg\textasciitilde{}wt+hp and
+mpg\textasciitilde{}wt+qsec:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{round}\NormalTok{(}\KeywordTok{coxtest}\NormalTok{(fit13, fit15), }\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Comparing two models mpg\textasciitilde{}wt+hp+qsec and
+mpg\textasciitilde{}wt+hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{wt }\OperatorTok{+}\StringTok{ }\NormalTok{hp }\OperatorTok{+}\StringTok{ }\NormalTok{qsec, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\KeywordTok{anova}\NormalTok{(fit13, fit)}
+\end{Highlighting}
+\end{Shaded}
+
+Comparing two models mpg\textasciitilde{}wt+hp+qsec and
+mpg\textasciitilde{}wt+qsec:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{anova}\NormalTok{(fit15, fit)}
+\end{Highlighting}
+\end{Shaded}
+
+The script fot Table. \ref{tab:test-mult-hp}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit21 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit22 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp }\OperatorTok{+}\StringTok{ }\NormalTok{disp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit23 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp }\OperatorTok{+}\StringTok{ }\NormalTok{wt, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit24 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp }\OperatorTok{+}\StringTok{ }\NormalTok{drat, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit25 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{hp }\OperatorTok{+}\StringTok{ }\NormalTok{qsec, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+
+\NormalTok{disp_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit21, fit22)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{wt_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit21, fit23)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{drat_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit21, fit24)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{qsec_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit21, fit25)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+
+
+\NormalTok{tests_pval <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(disp_val, wt_val, drat_val, qsec_val))}
+\KeywordTok{row.names}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~hp"}\NormalTok{)}
+\KeywordTok{colnames}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~hp+disp"}\NormalTok{, }\StringTok{"  mpg~hp+wt"}\NormalTok{, }\StringTok{"  mpg~hp+drat"}\NormalTok{, }\StringTok{"  mpg~hp+qsec"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(tests_pval, }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T, }
+      \DataTypeTok{caption =} \StringTok{"P-values of Comparing 2-variate Models with hp as the Regressor"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \StringTok{"hold_position"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Comparing mpg\textasciitilde{}hp+wt vs.~mpg\textasciitilde{}hp+disp and
+mpg\textasciitilde{}hp+drat:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{coxtest}\NormalTok{(fit22, fit23)}
+\KeywordTok{coxtest}\NormalTok{(fit23, fit24)}
+\end{Highlighting}
+\end{Shaded}
+
+The script for Table. \ref{tab:test-mult-disp}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit31 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit32 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp }\OperatorTok{+}\StringTok{ }\NormalTok{hp, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit33 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp }\OperatorTok{+}\StringTok{ }\NormalTok{wt, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit34 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp }\OperatorTok{+}\StringTok{ }\NormalTok{drat, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+\NormalTok{fit35 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(mpg }\OperatorTok{~}\StringTok{ }\NormalTok{disp }\OperatorTok{+}\StringTok{ }\NormalTok{qsec, }\DataTypeTok{data =}\NormalTok{ mtcars)}
+
+\NormalTok{hp_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit31, fit32)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{wt_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit31, fit33)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{drat_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit31, fit34)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+\NormalTok{qsec_val <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{anova}\NormalTok{(fit31, fit35)}\OperatorTok{$}\StringTok{`}\DataTypeTok{Pr(>F)}\StringTok{`}\NormalTok{[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{)}
+
+
+\NormalTok{tests_pval <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(hp_val, wt_val, drat_val, qsec_val))}
+\KeywordTok{row.names}\NormalTok{(tests_pval) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~disp"}\NormalTok{)}
+\KeywordTok{colnames}\NormalTok{(tests_pval) <-}\StringTok{ }
+\StringTok{        }\KeywordTok{c}\NormalTok{(}\StringTok{"mpg~disp+hp"}\NormalTok{, }\StringTok{"  mpg~disp+wt"}\NormalTok{, }\StringTok{"  mpg~disp+drat"}\NormalTok{, }\StringTok{"  mpg~dispp+qsec"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(tests_pval, }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T,}
+      \DataTypeTok{caption =} \StringTok{"P-values of Comparing 2-variate Models with disp as the Regressor"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \StringTok{"hold_position"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the fit\_wt\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_wt_hp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_wt_hp)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_wt_hp}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the new fit\_wt\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_wt_hp <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_wt_hp)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_wt_hp}
+\end{Highlighting}
+\end{Shaded}
+
+The confidence intervals for coefficients for fit\_wt\_hp:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{q <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{qt}\NormalTok{(.}\DecValTok{975}\NormalTok{, }\DataTypeTok{df =}\NormalTok{ fit_wt_hp}\OperatorTok{$}\NormalTok{df)}
+\NormalTok{int_aut <-}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{int_aut2man <-}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut <-}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut2man <-}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{5}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{5}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{hpc <-}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{4}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_hp[}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+
+\NormalTok{conf_wthp <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Intercept =}\NormalTok{ int_aut, }
+                        \DataTypeTok{wt =}\NormalTok{ wt_aut,  }
+                        \StringTok{`}\DataTypeTok{factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{int_aut2man, }
+                        \DataTypeTok{hp =}\NormalTok{ hpc, }
+                        \StringTok{`}\DataTypeTok{wt:factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{wt_aut2man)}
+
+\KeywordTok{row.names}\NormalTok{(conf_wthp) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Lower"}\NormalTok{, }\StringTok{"Upper"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{round}\NormalTok{(conf_wthp, }\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{position =} \StringTok{"center"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the model fit\_wt\_qsec:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_wt_qsec <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_wt_qsec)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_wt_qsec}
+\end{Highlighting}
+\end{Shaded}
+
+The coefficients of the new model fit\_wt\_qsec:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cff_wt_qsec <-}\StringTok{ }\KeywordTok{round}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit_wt_qsec)}\OperatorTok{$}\NormalTok{coefficient, }\DecValTok{2}\NormalTok{)}
+\NormalTok{cff_wt_qsec}
+\end{Highlighting}
+\end{Shaded}
+
+The confidence intervals for coefficients for fit\_wt\_qsec:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{q <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{qt}\NormalTok{(.}\DecValTok{975}\NormalTok{, }\DataTypeTok{df =}\NormalTok{ fit_wt_qsec}\OperatorTok{$}\NormalTok{df)}
+\NormalTok{int_aut <-}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{int_aut2man <-}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut <-}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{wt_aut2man <-}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{5}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{5}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+\NormalTok{qsecc <-}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{4}\NormalTok{,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{q }\OperatorTok{*}\StringTok{ }\NormalTok{cff_wt_qsec[}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{] }
+
+\NormalTok{conf_wtqsec <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Intercept =}\NormalTok{ int_aut, }
+                          \DataTypeTok{wt =}\NormalTok{ wt_aut,  }
+                          \StringTok{`}\DataTypeTok{factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{int_aut2man, }
+                          \DataTypeTok{qsec =}\NormalTok{ qsecc, }
+                          \StringTok{`}\DataTypeTok{wt:factor(am)manual}\StringTok{`}\NormalTok{ =}\StringTok{ }\NormalTok{wt_aut2man)}
+
+\KeywordTok{row.names}\NormalTok{(conf_wtqsec) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Lower"}\NormalTok{, }\StringTok{"Upper"}\NormalTok{)}
+
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{round}\NormalTok{(conf_wtqsec, }\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{position =} \StringTok{"center"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{app-diag}{\section*{Appendix D: The Diagnosis
+Plots}\label{app-diag}}
+\addcontentsline{toc}{section}{Appendix D: The Diagnosis Plots}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{D7_MPG_files/figure-latex/unnamed-chunk-30-1} 
+
+}
+
+\caption{\label{fig:diag-1-wt}Diagnosis Plots for mpg vs. wt*factor(am)}\label{fig:unnamed-chunk-30}
+\end{figure}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{D7_MPG_files/figure-latex/unnamed-chunk-31-1} 
+
+}
+
+\caption{\label{fig:diag-1-disp}Diagnosis Plots for mpg vs. disp*factor(am)}\label{fig:unnamed-chunk-31}
+\end{figure}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{D7_MPG_files/figure-latex/unnamed-chunk-32-1} 
+
+}
+
+\caption{\label{fig:diag-1-hp}Diagnosis Plots for mpg vs. hp*factor(am)}\label{fig:unnamed-chunk-32}
+\end{figure}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{D7_MPG_files/figure-latex/unnamed-chunk-33-1} 
+
+}
+
+\caption{\label{fig:diag-2-hp}Diagnosis Plots for mpg vs. (wt + hp) * factor(am)}\label{fig:unnamed-chunk-33}
+\end{figure}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{D7_MPG_files/figure-latex/unnamed-chunk-34-1} 
+
+}
+
+\caption{\label{fig:diag-2-qsec}Diagnosis Plots for mpg vs. (wt + qsec) * factor(am)}\label{fig:unnamed-chunk-34}
+\end{figure}
+
+
+\end{document}
